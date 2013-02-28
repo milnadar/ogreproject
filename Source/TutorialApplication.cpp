@@ -54,6 +54,7 @@ void TutorialApplication::createScene(void)
 	cell1 = new Cell(0, 0, "11");
 	cell2 = new Cell(4, 8, "48");
 	field->findPath(cell1, cell2);
+	GameUnit *unit = new GameUnit(10, mSceneMgr);
     // create your scene here :)
 }
 bool TutorialApplication::frameRenderingQueued(const Ogre::FrameEvent &evt)
