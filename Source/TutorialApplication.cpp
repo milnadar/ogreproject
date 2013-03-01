@@ -15,10 +15,12 @@ This source file is part of the
 -----------------------------------------------------------------------------
 */
 #include "TutorialApplication.h"
+#include "UnitManager.h"
 
 //-------------------------------------------------------------------------------------
 TutorialApplication::TutorialApplication(void)
 {
+	currentUnit = NULL;
 }
 //-------------------------------------------------------------------------------------
 TutorialApplication::~TutorialApplication(void)
@@ -48,13 +50,14 @@ void TutorialApplication::createScene(void)
 	gui->initialise();
 	button = gui->createWidget<MyGUI::Button>("Button", 10, 10, 300, 26, MyGUI::Align::Default, "Main");
 	button->setCaption("exit");
+	UnitManager *unitManager = new UnitManager(mSceneMgr);
 	field = new GameField(mSceneMgr);
 	field->setupField();
 	Cell *cell1, *cell2;
 	cell1 = new Cell(0, 0, "11");
 	cell2 = new Cell(4, 8, "48");
 	field->findPath(cell1, cell2);
-	GameUnit *unit = new GameUnit(10, mSceneMgr);
+	currentUnit = unitManager->createUnit();
     // create your scene here :)
 }
 bool TutorialApplication::frameRenderingQueued(const Ogre::FrameEvent &evt)

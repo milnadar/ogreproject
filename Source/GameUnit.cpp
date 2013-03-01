@@ -7,6 +7,7 @@ GameUnit::GameUnit(int id, Ogre::SceneManager *manager) : sceneManager(manager)
 	{
 		unitEntity = sceneManager->createEntity(unitName, "robot.mesh");
 		unitNode = sceneManager->getRootSceneNode()->createChildSceneNode(unitName + "node");
+		unitNode->setScale(0.05, 0.05, 0.05);
 		unitNode->attachObject(unitEntity);
 	}
 }

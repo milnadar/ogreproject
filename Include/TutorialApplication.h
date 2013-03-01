@@ -43,6 +43,7 @@ private:
     float mRotateSpeed;
 	MyGUI::ButtonPtr button;
 	GameField *field;
+	GameUnit *currentUnit;
 };
 
 #endif // #ifndef __TutorialApplication_h_
