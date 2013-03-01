@@ -38,8 +38,6 @@ void GameField::setupField()
 			else
 				pos = Ogre::Vector3(i * 2.5, 0, j * 3);
 			ent = sceneMgr->createEntity(name, "cell.mesh");
-			Ogre::MaterialPtr mat = Ogre::MaterialManager::getSingleton().getByName("Cell");
-			ent->setMaterial(mat);
 			if(i % 2 != 0 && j == 9)
 			{
 				ent->setVisible(false);
@@ -48,7 +46,22 @@ void GameField::setupField()
 			node = sceneMgr->getRootSceneNode()->createChildSceneNode(name + "node", pos);
 			node->attachObject(ent);
 			cell->setCellEntity(ent);
+			ent->setUserAny(Ogre::Any(cell));
 		}
+}
+
+bool GameField::setUnitOnCell(Cell *cell, GameUnit* unit)
+{
+	if(cell->isWalkable())
+	{
+		//clear cell unit was on
+		Cell *unitCell = unit->getCell();
+		if(unitCell != NULL)
+			unitCell->removeUnitFromCell();
+		cell->setUnit(unit);
+		return true;
+	}
+	return false;
 }
 
 bool GameField::setUnitOnCell(int indexi, int indexj, GameUnit* unit)

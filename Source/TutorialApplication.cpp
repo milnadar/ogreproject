@@ -50,6 +50,8 @@ void TutorialApplication::createScene(void)
 	gui->initialise();
 	button = gui->createWidget<MyGUI::Button>("Button", 10, 10, 300, 26, MyGUI::Align::Default, "Main");
 	button->setCaption("exit");
+	button = gui->createWidget<MyGUI::Button>("Button", 10, 46, 300, 26, MyGUI::Align::Default, "Main");
+	button->setCaption("Create unit");
 	UnitManager *unitManager = new UnitManager(mSceneMgr);
 	field = new GameField(mSceneMgr);
 	field->setupField();
@@ -72,6 +74,21 @@ bool TutorialApplication::mouseMoved(const OIS::MouseEvent &arg)
 		mCamera->yaw(Ogre::Degree(-arg.state.X.rel * mRotateSpeed));
 		mCamera->pitch(Ogre::Degree(-arg.state.Y.rel * mRotateSpeed));
 	}
+	if(currentUnit != NULL)
+	{
+		MyGUI::IntPoint position = MyGUI::InputManager::getInstance().getMousePosition();
+		Ogre::Ray mouseRay = mCamera->getCameraToViewportRay(position.left/float(arg.state.width),position.top/float(arg.state.height));
+        mRaySceneQuery->setRay(mouseRay);
+ 
+        Ogre::RaySceneQueryResult &result = mRaySceneQuery->execute();
+        Ogre::RaySceneQueryResult::iterator itr = result.begin();
+ 
+		if (itr != result.end() && itr->movable)
+		{
+			Ogre::Vector3 position = itr->movable->getParentSceneNode()->getPosition();
+			currentUnit->SetPosition(position);
+		}
+	}
 	return true;
 }
 bool TutorialApplication::mousePressed(const OIS::MouseEvent &arg, OIS::MouseButtonID id)
@@ -83,14 +100,35 @@ bool TutorialApplication::mousePressed(const OIS::MouseEvent &arg, OIS::MouseBut
         mRaySceneQuery->setRay(mouseRay);
  
         Ogre::RaySceneQueryResult &result = mRaySceneQuery->execute();
-        Ogre::RaySceneQueryResult::iterator itr = result.begin();
- 
-		if (itr != result.end() && itr->movable)
-			button->setCaption(itr->movable->getName().c_str());
+        Ogre::RaySceneQueryResult::iterator itr;
+		for(itr = result.begin(); itr != result.end(); itr++){
+			if(currentUnit != NULL)
+			{
+				if (itr->movable && itr->movable->getName().find("cell") == 0)
+				{
+					Cell* cell = Ogre::any_cast<Cell*>(itr->movable->getUserAny());
+					field->setUnitOnCell(cell, currentUnit);
+					currentUnit = NULL;
+					break;
+				}
+			}
+			else
+			{
+				if (itr->movable && itr->movable->getName().find("unit") == 0)
+				{
+					currentUnit = Ogre::any_cast<GameUnit*>(itr->movable->getUserAny());
+					Cell *cell = currentUnit->getCell();
+					break;
+				}
+			}
+		}
+		//if (itr != result.end() && itr->movable)
+		//	button->setCaption(itr->movable->getName().c_str());
 		mLmouseDown = true;
 	}
 	else if(id == OIS::MB_Right)
 	{
+		currentUnit = NULL;
 		mRmouseDown = true;
 		MyGUI::PointerManager::getInstance().setVisible(false);
 	}

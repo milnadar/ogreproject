@@ -19,6 +19,7 @@ public:
 	void clearMap();
 	Cell* getCellByIndex(int , int);
 	bool setUnitOnCell(int, int, GameUnit*);
+	bool setUnitOnCell(Cell*, GameUnit*);
 	//bool setUnitOnCell(const Cell*, GameUnit*); ---?
 private:
 	bool validateIndexes(int, int);

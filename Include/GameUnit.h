@@ -14,6 +14,7 @@ public:
 	~GameUnit() {};
 	Cell* getCell() {return unitCell;};
 	Ogre::String getUnitName() const {return unitName;};
+	void SetPosition(Ogre::Vector3&);
 private:
 	Ogre::Entity *unitEntity;
 	Ogre::SceneNode *unitNode;
