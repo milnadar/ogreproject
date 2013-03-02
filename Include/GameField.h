@@ -31,6 +31,8 @@ private:
 	std::list<Cell*>::iterator listIterator;
 	std::vector<Cell*> retrievedPath;
 	Ogre::SceneManager *sceneMgr;
+	int fieldWidth;
+	int fieldHeight;
 };
 
 #endif

@@ -13,8 +13,11 @@ public:
 	GameUnit(int id, Ogre::SceneManager *manager);
 	~GameUnit() {};
 	Cell* getCell() {return unitCell;};
+	void setUnitCell(Cell* newCell) {unitCell = newCell;};
 	Ogre::String getUnitName() const {return unitName;};
 	void SetPosition(Ogre::Vector3&);
+	Ogre::Vector3 getPosition();
+	Ogre::SceneNode* getUnitNode() {return unitNode;};
 private:
 	Ogre::Entity *unitEntity;
 	Ogre::SceneNode *unitNode;

@@ -37,12 +37,14 @@ void TutorialApplication::createFrameListener()
     mLmouseDown = false;
 	mRmouseDown = false;
     mRotateSpeed = .2;
+	walkSpeed = 10.0f;
+	direction = Ogre::Vector3::ZERO;
 }
 
 void TutorialApplication::createScene(void)
 {
-	mCamera->setPosition(0, 50, 0);
-	mCamera->lookAt(50, 0, 50);
+	mCamera->setPosition(-80, 80, 30);
+	mCamera->lookAt(80, 0, 30);
 	MyGUI::Gui *gui;
 	MyGUI::OgrePlatform *platform = new MyGUI::OgrePlatform();
 	platform->initialise(mWindow, mSceneMgr);
@@ -60,10 +62,31 @@ void TutorialApplication::createScene(void)
 	cell2 = new Cell(4, 8, "48");
 	field->findPath(cell1, cell2);
 	currentUnit = unitManager->createUnit();
+	field->setUnitOnCell(field->getCellByIndex(0, 0), currentUnit);
     // create your scene here :)
 }
 bool TutorialApplication::frameRenderingQueued(const Ogre::FrameEvent &evt)
 {
+	//
+	if(direction == Ogre::Vector3::ZERO)
+	{
+		nextLocation();
+	}
+	else
+	{
+		Ogre::Real move = walkSpeed * evt.timeSinceLastFrame;
+		distance -= move;
+		if(distance <= 0.00f)
+		{
+			currentUnit->SetPosition(destination);
+			direction = Ogre::Vector3::ZERO;
+		}
+		else
+		{
+			currentUnit->getUnitNode()->translate(direction * move);
+		}
+	}
+
 	return BaseApplication::frameRenderingQueued(evt);
 }
 bool TutorialApplication::mouseMoved(const OIS::MouseEvent &arg)
@@ -85,8 +108,8 @@ bool TutorialApplication::mouseMoved(const OIS::MouseEvent &arg)
  
 		if (itr != result.end() && itr->movable)
 		{
-			Ogre::Vector3 position = itr->movable->getParentSceneNode()->getPosition();
-			currentUnit->SetPosition(position);
+			//Ogre::Vector3 position = itr->movable->getParentSceneNode()->getPosition();
+			//currentUnit->SetPosition(position);
 		}
 	}
 	return true;
@@ -107,10 +130,22 @@ bool TutorialApplication::mousePressed(const OIS::MouseEvent &arg, OIS::MouseBut
 				if (itr->movable && itr->movable->getName().find("cell") == 0)
 				{
 					Cell* cell = Ogre::any_cast<Cell*>(itr->movable->getUserAny());
+					std::vector<Cell*> path;
+					std::vector<Cell*>::iterator pathItr;
+					path = field->findPath(currentUnit->getCell(), cell);
+					for(pathItr = path.begin(); pathItr != path.end(); pathItr++)
+						walkList.push_front((*pathItr)->getEntity()->getParentSceneNode()->getPosition());
+
+					break;
+				}
+				///for edit state
+				/*if (itr->movable && itr->movable->getName().find("cell") == 0)
+				{
+					Cell* cell = Ogre::any_cast<Cell*>(itr->movable->getUserAny());
 					field->setUnitOnCell(cell, currentUnit);
 					currentUnit = NULL;
 					break;
-				}
+				}*/
 			}
 			else
 			{
@@ -144,6 +179,16 @@ bool TutorialApplication::mouseReleased(const OIS::MouseEvent &arg, OIS::MouseBu
 		MyGUI::PointerManager::getInstance().setVisible(true);
 	}
 	return true;
+}
+
+bool TutorialApplication::nextLocation()
+{
+	if(walkList.empty())
+		return false;
+	destination = walkList.front();
+	walkList.pop_front();
+	direction = destination - currentUnit->getPosition();
+	distance = direction.normalise();
 }
 
 

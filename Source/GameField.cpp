@@ -2,10 +2,12 @@
 
 GameField::GameField(Ogre::SceneManager* mgr) : sceneMgr(mgr)
 {
+	fieldWidth = 20;
+	fieldHeight = 30;
 	std::vector<Cell*> tmp;
-	for(int i = 0; i < 10; i++)
+	for(int i = 0; i < fieldHeight; i++)
 	{
-		for(int j = 0; j < 10; j++)
+		for(int j = 0; j < fieldWidth; j++)
 		{
 			tmp.push_back(NULL);
 		}
@@ -26,10 +28,10 @@ void GameField::setupField()
 {
 	Ogre::Entity *ent;
 	Ogre::SceneNode *node;
-	for(int i = 0; i < 10; i++)
-		for(int j = 0; j < 10; j++)
+	for(int i = 0; i < fieldHeight; i++)
+		for(int j = 0; j < fieldWidth; j++)
 		{
-			Ogre::String name = "cell" + Ogre::StringConverter::toString(i) + Ogre::StringConverter::toString(j);
+			Ogre::String name = "cell" + Ogre::StringConverter::toString(i) + "_" + Ogre::StringConverter::toString(j);
 			Cell *cell = new Cell(i, j, name);
 			field[i][j] = cell;
 			Ogre::Vector3 pos;
@@ -38,7 +40,7 @@ void GameField::setupField()
 			else
 				pos = Ogre::Vector3(i * 2.5, 0, j * 3);
 			ent = sceneMgr->createEntity(name, "cell.mesh");
-			if(i % 2 != 0 && j == 9)
+			if(i % 2 != 0 && j == 29)
 			{
 				ent->setVisible(false);
 				cell->setState(1);
@@ -59,6 +61,7 @@ bool GameField::setUnitOnCell(Cell *cell, GameUnit* unit)
 		if(unitCell != NULL)
 			unitCell->removeUnitFromCell();
 		cell->setUnit(unit);
+		unit->setUnitCell(cell);
 		return true;
 	}
 	return false;
@@ -186,7 +189,7 @@ void GameField::clearMap()
 Cell* GameField::getCellByIndex(int index1, int index2)
 {
 	Cell *cell = NULL;
-	if(index1 < 10 && index2 < 10 && index1 >= 0 && index2 >= 0)
+	if(index1 < fieldHeight && index2 < fieldWidth && index1 >= 0 && index2 >= 0)
 		cell = field[index1][index2];
 	return cell;
 }

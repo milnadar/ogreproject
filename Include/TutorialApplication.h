@@ -37,6 +37,7 @@ protected:
     virtual bool mouseMoved(const OIS::MouseEvent &arg);
     virtual bool mousePressed(const OIS::MouseEvent &arg,OIS::MouseButtonID id);
     virtual bool mouseReleased(const OIS::MouseEvent &arg,OIS::MouseButtonID id);
+	bool nextLocation();
 private:
 	Ogre::RaySceneQuery *mRaySceneQuery;// The ray scene query pointer
     bool mLmouseDown, mRmouseDown;		// True if the mouse buttons are down
@@ -44,6 +45,12 @@ private:
 	MyGUI::ButtonPtr button;
 	GameField *field;
 	GameUnit *currentUnit;
+	Ogre::Real distance;
+	Ogre::Vector3 destination;
+	Ogre::Vector3 direction;
+	Ogre::Real walkSpeed;
+	bool allowedToMove;
+	std::deque<Ogre::Vector3> walkList;
 };
 
 #endif // #ifndef __TutorialApplication_h_
