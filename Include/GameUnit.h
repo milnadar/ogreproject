@@ -17,11 +17,12 @@ public:
 	Ogre::String getUnitName() const {return unitName;};
 	void SetPosition(Ogre::Vector3&);
 	Ogre::Vector3 getPosition();
-	Ogre::SceneNode* getUnitNode() {return unitNode;};
+	bool TranslateUnit(Ogre::Vector3&);
 private:
 	Ogre::Entity *unitEntity;
 	Ogre::SceneNode *unitNode;
 	Ogre::String unitName;
+	Ogre::Vector3 unitDirection;
 	Cell* unitCell;
 	Ogre::SceneManager *sceneManager;
 };

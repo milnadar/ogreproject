@@ -29,15 +29,22 @@ public:
     virtual ~TutorialApplication(void);
 
 protected:
+	enum GameState {PlayState = 0, EditState};
     virtual void createScene(void);
 	virtual void createFrameListener(void);
     //frame listener    
     virtual bool frameRenderingQueued(const Ogre::FrameEvent &evt);
     //mouse listener
     virtual bool mouseMoved(const OIS::MouseEvent &arg);
+	bool mouseMovedInEditState(const OIS::MouseEvent &arg);
+	bool mouseMovedInPlayState(const OIS::MouseEvent &arg);
     virtual bool mousePressed(const OIS::MouseEvent &arg,OIS::MouseButtonID id);
+	bool mousePressedInEditState(const OIS::MouseEvent &arg,OIS::MouseButtonID id);
+	bool mousePressedInPlayState(const OIS::MouseEvent &arg,OIS::MouseButtonID id);
     virtual bool mouseReleased(const OIS::MouseEvent &arg,OIS::MouseButtonID id);
 	bool nextLocation();
+	void setupGUI();
+	void setupScene();
 private:
 	Ogre::RaySceneQuery *mRaySceneQuery;// The ray scene query pointer
     bool mLmouseDown, mRmouseDown;		// True if the mouse buttons are down
@@ -51,6 +58,7 @@ private:
 	Ogre::Real walkSpeed;
 	bool allowedToMove;
 	std::deque<Ogre::Vector3> walkList;
+	GameState gameState;
 };
 
 #endif // #ifndef __TutorialApplication_h_

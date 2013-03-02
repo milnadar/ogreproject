@@ -1,6 +1,6 @@
 #include "GameUnit.h"
 
-GameUnit::GameUnit(int id, Ogre::SceneManager *manager) : sceneManager(manager)
+GameUnit::GameUnit(int id, Ogre::SceneManager *manager) : sceneManager(manager), unitDirection(Ogre::Vector3::ZERO)
 {
 	unitName = "unit" + Ogre::StringConverter::toString(id);
 	if(sceneManager)
@@ -27,4 +27,14 @@ Ogre::Vector3 GameUnit::getPosition()
 		position = unitNode->getPosition();
 	}
 	return position;
+}
+
+bool GameUnit::TranslateUnit(Ogre::Vector3 &vector)
+{
+	if(unitNode != NULL)
+	{
+		unitNode->translate(vector);
+		return true;
+	}
+	return false;
 }

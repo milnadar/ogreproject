@@ -2,10 +2,11 @@
 #define _UnitManager_
 
 #include "OgreSceneManager.h"
-//#include "GameUnit.h"
+#include "OgreSingleton.h"
+
 class GameUnit;
 
-class UnitManager
+class UnitManager : public Ogre::Singleton<UnitManager>
 {
 public: 
 	UnitManager(Ogre::SceneManager*);

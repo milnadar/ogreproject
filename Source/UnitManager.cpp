@@ -1,8 +1,11 @@
 #include "UnitManager.h"
 #include "GameUnit.h"
 
-UnitManager::UnitManager(Ogre::SceneManager *manager) : sceneManager(manager)
+template<> UnitManager* Ogre::Singleton<UnitManager>::msSingleton = 0;
+
+UnitManager::UnitManager(Ogre::SceneManager* manager)
 {
+	sceneManager = manager;
 	unitCounter = 0;
 }
 
