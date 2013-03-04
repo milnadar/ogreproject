@@ -24,11 +24,11 @@ void Cell::clear()
 void Cell::setUnit(GameUnit *unit)
 {
 	//this->unit = unit;
-	//state = 3; //tmp value
+	state = 3; //tmp value
 }
 
 void Cell::removeUnitFromCell()
 {
-//	this->unit = NULL;
-//	state = 0;
+	//this->unit = NULL;
+	state = 0;
 }

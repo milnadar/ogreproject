@@ -302,8 +302,11 @@ bool TutorialApplication::moveUnitToCell(GameUnit *unit, Cell* cell)
 	std::vector<Cell*> path;
 	std::vector<Cell*>::iterator pathItr;
 	path = field->findPath(unit->getCell(), cell);
+	Ogre::LogManager::getSingletonPtr()->logMessage("---");
 	for(pathItr = path.begin(); pathItr != path.end(); pathItr++)
-		walkList.push_front((*pathItr)->getEntity()->getParentSceneNode()->getPosition());
+		{walkList.push_front((*pathItr)->getEntity()->getParentSceneNode()->getPosition());
+	Ogre::LogManager::getSingletonPtr()->logMessage((*pathItr)->getName());
+	}
 	return true;
 }
 
@@ -317,11 +320,11 @@ bool TutorialApplication::moveUnitToCell(GameUnit *unit, Cell* cell)
 extern "C" {
 #endif
 
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-    INT WINAPI WinMain( HINSTANCE hInst, HINSTANCE, LPSTR strCmdLine, INT )
-#else
+//#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+//    INT WINAPI WinMain( HINSTANCE hInst, HINSTANCE, LPSTR strCmdLine, INT )
+//#else
     int main(int argc, char *argv[])
-#endif
+//#endif
     {
         // Create application object
         TutorialApplication app;

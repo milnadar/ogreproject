@@ -133,17 +133,17 @@ std::vector<Cell*> GameField::findPath(const Cell* _start, const Cell* _finish)
 			switch(index)
 			{
 			case 0 : 
-				{child = getCellByIndex(current->getI() + shiftForXr, current->getJ() - 1); tmpG = 10; break;}
+				{child = getCellByIndex(current->getI() + 1, current->getJ() - shiftForXl); tmpG = 10; break;}
 			case 1 : 
-				{child = getCellByIndex(current->getI() + 1, current->getJ()); tmpG = 15; break;}
+				{child = getCellByIndex(current->getI() + 1, current->getJ() + shiftForXr); tmpG = 15; break;}
 			case 2 : 
-				{child = getCellByIndex(current->getI() + shiftForXr, current->getJ() + 1); tmpG = 10; break;}
+				{child = getCellByIndex(current->getI(), current->getJ() + 1); tmpG = 10; break;}
 			case 3 : 
-				{child = getCellByIndex(current->getI() - shiftForXl,current->getJ() + 1); tmpG = 10; break;}
+				{child = getCellByIndex(current->getI() - 1, current->getJ() + shiftForXr); tmpG = 10; break;}
 			case 4 : 
-				{child = getCellByIndex(current->getI() - 1,current->getJ()); tmpG = 15; break;}
+				{child = getCellByIndex(current->getI() - 1, current->getJ() - shiftForXl); tmpG = 15; break;}
 			case 5 : 
-				{child = getCellByIndex(current->getI() - shiftForXl,current->getJ() - 1); tmpG = 10; break;}
+				{child = getCellByIndex(current->getI(), current->getJ() - 1); tmpG = 10; break;}
 			}//switch
 			if (child == NULL)
 				continue;

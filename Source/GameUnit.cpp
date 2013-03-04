@@ -1,6 +1,7 @@
 #include "GameUnit.h"
 
-GameUnit::GameUnit(int id, Ogre::SceneManager *manager) : sceneManager(manager), unitDirection(Ogre::Vector3::ZERO)
+GameUnit::GameUnit(int id, Ogre::SceneManager *manager) : sceneManager(manager), unitDirection(Ogre::Vector3::ZERO),
+	unitCell(NULL), unitNode(NULL), unitEntity(NULL)
 {
 	unitName = "unit" + Ogre::StringConverter::toString(id);
 	if(sceneManager)

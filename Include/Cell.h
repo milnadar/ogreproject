@@ -20,6 +20,7 @@ public:
 	void setCellEntity(Ogre::Entity *entity) {cellEntity = entity;};
 	bool isWalkable();
 	const Ogre::Entity* getEntity() const {return cellEntity;};
+	const Ogre::String& getName() const {return idname;};
 	int getF() const {return f;};
 	int getG() const {return g;};
 	int getH() const {return h;};
