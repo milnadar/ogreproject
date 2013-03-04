@@ -42,11 +42,12 @@ protected:
 	bool mousePressedInEditState(const OIS::MouseEvent &arg,OIS::MouseButtonID id);
 	bool mousePressedInPlayState(const OIS::MouseEvent &arg,OIS::MouseButtonID id);
     virtual bool mouseReleased(const OIS::MouseEvent &arg,OIS::MouseButtonID id);
-	void mousePressed(MyGUI::Widget* _widget);
+	void buttonClicked(MyGUI::Widget* _widget);
 	void setupGUI();
 	void setupScene();
 	void changeGameState();
 private:
+	enum Players {player1 = 1, player2};
 	bool moveUnitToCell(GameUnit*, Cell*);
 	bool nextLocation();
 	Ogre::RaySceneQuery *mRaySceneQuery;// The ray scene query pointer
@@ -62,6 +63,7 @@ private:
 	bool allowedToMove;
 	std::deque<Ogre::Vector3> walkList;
 	GameState gameState;
+	Players currentPlayer;
 	Cell* finalCell;
 };
 

@@ -14,12 +14,12 @@ UnitManager::~UnitManager()
 	//if(!units.empty()) //delete units
 }
 
-GameUnit* UnitManager::createUnit()
+GameUnit* UnitManager::createUnit(int player)
 {
 	GameUnit *unit = NULL;
 	if(sceneManager != NULL)
 	{
-		unit = new GameUnit(unitCounter++, sceneManager);
+		unit = new GameUnit(unitCounter++, player, sceneManager);
 		units.push_back(unit);
 	}
 	return unit;

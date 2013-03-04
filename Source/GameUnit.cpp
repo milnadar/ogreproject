@@ -1,7 +1,7 @@
 #include "GameUnit.h"
 
-GameUnit::GameUnit(int id, Ogre::SceneManager *manager) : sceneManager(manager), unitDirection(Ogre::Vector3::ZERO),
-	unitCell(NULL), unitNode(NULL), unitEntity(NULL)
+GameUnit::GameUnit(int id, int player, Ogre::SceneManager *manager) : sceneManager(manager), unitDirection(Ogre::Vector3::ZERO),
+	unitCell(NULL), unitNode(NULL), unitEntity(NULL), owner(player)
 {
 	unitName = "unit" + Ogre::StringConverter::toString(id);
 	if(sceneManager)
@@ -11,6 +11,10 @@ GameUnit::GameUnit(int id, Ogre::SceneManager *manager) : sceneManager(manager),
 		unitNode->setScale(0.07, 0.07, 0.07);
 		unitNode->attachObject(unitEntity);
 		unitEntity->setUserAny(Ogre::Any(this));
+		if(player == 2)
+		{
+			unitNode->yaw(Ogre::Degree(180));
+		}
 	}
 }
 

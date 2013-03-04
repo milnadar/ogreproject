@@ -11,7 +11,7 @@ class UnitManager : public Ogre::Singleton<UnitManager>
 public: 
 	UnitManager(Ogre::SceneManager*);
 	~UnitManager();
-	GameUnit* createUnit();
+	GameUnit* createUnit(int player);
 private:
 	std::vector<GameUnit*> units;
 	Ogre::SceneManager *sceneManager;

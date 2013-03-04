@@ -23,6 +23,7 @@ TutorialApplication::TutorialApplication(void)
 	currentUnit = NULL;
 	finalCell = NULL;
 	gameState = GameState::PlayState;
+	currentPlayer = Players::player1;
 }
 //-------------------------------------------------------------------------------------
 TutorialApplication::~TutorialApplication(void)
@@ -59,12 +60,15 @@ void TutorialApplication::setupGUI()
 	platform->initialise(mWindow, mSceneMgr);
 	gui = new MyGUI::Gui;
 	gui->initialise();
-	button = gui->createWidget<MyGUI::Button>("Button", 10, 10, 300, 26, MyGUI::Align::Default, "Main", "change");
+	button = gui->createWidget<MyGUI::Button>("Button", 10, 10, 300, 26, MyGUI::Align::Default, "Main", "changeGameStateButton");
 	button->setCaption("Change game state");
-	button->eventMouseButtonClick = MyGUI::newDelegate(this, &TutorialApplication::mousePressed);
-	button = gui->createWidget<MyGUI::Button>("Button", 10, 46, 300, 26, MyGUI::Align::Default, "Main", "create");
+	button->eventMouseButtonClick = MyGUI::newDelegate(this, &TutorialApplication::buttonClicked);
+	button = gui->createWidget<MyGUI::Button>("Button", 10, 46, 300, 26, MyGUI::Align::Default, "Main", "createUnitButton");
 	button->setCaption("Create unit");
-	button->eventMouseButtonClick = MyGUI::newDelegate(this, &TutorialApplication::mousePressed);
+	button->eventMouseButtonClick = MyGUI::newDelegate(this, &TutorialApplication::buttonClicked);
+	button = gui->createWidget<MyGUI::Button>("Button", 10, 82, 300, 26, MyGUI::Align::Default, "Main", "changePlayerButton");
+	button->setCaption("Change player");
+	button->eventMouseButtonClick = MyGUI::newDelegate(this, &TutorialApplication::buttonClicked);
 }
 
 void TutorialApplication::setupScene()
@@ -72,7 +76,7 @@ void TutorialApplication::setupScene()
 	UnitManager *unitManager = new UnitManager(mSceneMgr);
 	field = new GameField(mSceneMgr);
 	field->setupField();
-	currentUnit = UnitManager::getSingletonPtr()->createUnit();
+	currentUnit = UnitManager::getSingletonPtr()->createUnit(currentPlayer);
 	field->setUnitOnCell(field->getCellByIndex(0, 0), currentUnit);
 	//Ogre::Entity *entity = mSceneMgr->createEntity("tube", "tube.mesh");
 	//Ogre::SceneNode *node = mSceneMgr->getRootSceneNode()->createChildSceneNode("nodetube");
@@ -270,18 +274,25 @@ bool TutorialApplication::mouseReleased(const OIS::MouseEvent &arg, OIS::MouseBu
 	return true;
 }
 
-void TutorialApplication::mousePressed(MyGUI::Widget* _widget)
+void TutorialApplication::buttonClicked(MyGUI::Widget* _widget)
 {
 	if(_widget != NULL)
 	{
-		if(_widget->getName() == "create")
+		if(_widget->getName() == "createUnitButton")
 		{
 			if(gameState == GameState::EditState)
-				currentUnit = UnitManager::getSingletonPtr()->createUnit();
+				currentUnit = UnitManager::getSingletonPtr()->createUnit(currentPlayer);
 		}
-		else if(_widget->getName() == "change")
+		else if(_widget->getName() == "changeGameStateButton")
 		{
 			changeGameState();
+		}
+		else if(_widget->getName() == "changePlayerButton")
+		{
+			if(currentPlayer == Players::player1)
+				currentPlayer = Players::player2;
+			else
+				currentPlayer = Players::player1;
 		}
 	}
 }
@@ -302,10 +313,8 @@ bool TutorialApplication::moveUnitToCell(GameUnit *unit, Cell* cell)
 	std::vector<Cell*> path;
 	std::vector<Cell*>::iterator pathItr;
 	path = field->findPath(unit->getCell(), cell);
-	Ogre::LogManager::getSingletonPtr()->logMessage("---");
 	for(pathItr = path.begin(); pathItr != path.end(); pathItr++)
 		{walkList.push_front((*pathItr)->getEntity()->getParentSceneNode()->getPosition());
-	Ogre::LogManager::getSingletonPtr()->logMessage((*pathItr)->getName());
 	}
 	return true;
 }
@@ -320,11 +329,11 @@ bool TutorialApplication::moveUnitToCell(GameUnit *unit, Cell* cell)
 extern "C" {
 #endif
 
-//#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-//    INT WINAPI WinMain( HINSTANCE hInst, HINSTANCE, LPSTR strCmdLine, INT )
-//#else
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+    INT WINAPI WinMain( HINSTANCE hInst, HINSTANCE, LPSTR strCmdLine, INT )
+#else
     int main(int argc, char *argv[])
-//#endif
+#endif
     {
         // Create application object
         TutorialApplication app;
@@ -345,4 +354,3 @@ extern "C" {
 
 #ifdef __cplusplus
 }
-#endif

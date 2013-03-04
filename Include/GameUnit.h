@@ -10,7 +10,7 @@ class Cell;
 class GameUnit
 {
 public:
-	GameUnit(int id, Ogre::SceneManager *manager);
+	GameUnit(int id, int player, Ogre::SceneManager *manager);
 	~GameUnit() {};
 	Cell* getCell() {return unitCell;};
 	void setUnitCell(Cell* newCell) {unitCell = newCell;};
@@ -25,6 +25,7 @@ private:
 	Ogre::Vector3 unitDirection;
 	Cell* unitCell;
 	Ogre::SceneManager *sceneManager;
+	int owner;
 };
 
 #endif
