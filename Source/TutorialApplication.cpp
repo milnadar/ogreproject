@@ -21,6 +21,7 @@ This source file is part of the
 TutorialApplication::TutorialApplication(void)
 {
 	currentUnit = NULL;
+	finalCell = NULL;
 	gameState = GameState::PlayState;
 }
 //-------------------------------------------------------------------------------------
@@ -58,10 +59,12 @@ void TutorialApplication::setupGUI()
 	platform->initialise(mWindow, mSceneMgr);
 	gui = new MyGUI::Gui;
 	gui->initialise();
-	button = gui->createWidget<MyGUI::Button>("Button", 10, 10, 300, 26, MyGUI::Align::Default, "Main");
+	button = gui->createWidget<MyGUI::Button>("Button", 10, 10, 300, 26, MyGUI::Align::Default, "Main", "change");
 	button->setCaption("Change game state");
-	button = gui->createWidget<MyGUI::Button>("Button", 10, 46, 300, 26, MyGUI::Align::Default, "Main");
+	button->eventMouseButtonClick = MyGUI::newDelegate(this, &TutorialApplication::mousePressed);
+	button = gui->createWidget<MyGUI::Button>("Button", 10, 46, 300, 26, MyGUI::Align::Default, "Main", "create");
 	button->setCaption("Create unit");
+	button->eventMouseButtonClick = MyGUI::newDelegate(this, &TutorialApplication::mousePressed);
 }
 
 void TutorialApplication::setupScene()
@@ -69,12 +72,22 @@ void TutorialApplication::setupScene()
 	UnitManager *unitManager = new UnitManager(mSceneMgr);
 	field = new GameField(mSceneMgr);
 	field->setupField();
-	Cell *cell1, *cell2;
-	cell1 = new Cell(0, 0, "11");
-	cell2 = new Cell(4, 8, "48");
-	field->findPath(cell1, cell2);
-	currentUnit = UnitManager::getSingletonPtr()->createUnit();//unitManager->createUnit();
+	currentUnit = UnitManager::getSingletonPtr()->createUnit();
 	field->setUnitOnCell(field->getCellByIndex(0, 0), currentUnit);
+	//Ogre::Entity *entity = mSceneMgr->createEntity("tube", "tube.mesh");
+	//Ogre::SceneNode *node = mSceneMgr->getRootSceneNode()->createChildSceneNode("nodetube");
+	//node->attachObject(entity);
+	//node->setScale(2,2,2);
+	//node->setPosition(25, 10, 50);
+}
+
+void TutorialApplication::changeGameState()
+{
+	if(gameState == GameState::PlayState)
+		gameState = GameState::EditState;
+	else
+		gameState = GameState::PlayState;
+	currentUnit = NULL;
 }
 
 bool TutorialApplication::frameRenderingQueued(const Ogre::FrameEvent &evt)
@@ -82,7 +95,11 @@ bool TutorialApplication::frameRenderingQueued(const Ogre::FrameEvent &evt)
 	//
 	if(direction == Ogre::Vector3::ZERO)
 	{
-		nextLocation();
+		if(!nextLocation() && currentUnit != NULL && finalCell != NULL)
+		{
+			field->setUnitOnCell(finalCell, currentUnit);
+			finalCell = NULL;
+		}
 	}
 	else
 	{
@@ -144,15 +161,17 @@ bool TutorialApplication::mouseMovedInPlayState(const OIS::MouseEvent &arg)
 
 bool TutorialApplication::mousePressed(const OIS::MouseEvent &arg, OIS::MouseButtonID id)
 {
+	MyGUI::InputManager::getInstance().injectMousePress(arg.state.X.abs, arg.state.Y.abs, MyGUI::MouseButton::Enum(id));
 	bool result = true;
 	if(id == OIS::MB_Left)
 	{
 		mLmouseDown = true;
 	}
 	else if(id == OIS::MB_Right)
-	{	
+	{
 		mRmouseDown = true;
 		MyGUI::PointerManager::getInstance().setVisible(false);
+		currentUnit = NULL;
 	}
 	if(gameState == GameState::EditState)
 		result = mousePressedInEditState(arg, id);
@@ -217,11 +236,7 @@ bool TutorialApplication::mousePressedInPlayState(const OIS::MouseEvent &arg,OIS
 				if (itr->movable && itr->movable->getName().find("cell") == 0)
 				{
 					Cell* cell = Ogre::any_cast<Cell*>(itr->movable->getUserAny());
-					std::vector<Cell*> path;
-					std::vector<Cell*>::iterator pathItr;
-					path = field->findPath(currentUnit->getCell(), cell);
-					for(pathItr = path.begin(); pathItr != path.end(); pathItr++)
-						walkList.push_front((*pathItr)->getEntity()->getParentSceneNode()->getPosition());
+					moveUnitToCell(currentUnit, cell);
 					break;
 				}
 			}
@@ -244,6 +259,7 @@ bool TutorialApplication::mousePressedInPlayState(const OIS::MouseEvent &arg,OIS
 
 bool TutorialApplication::mouseReleased(const OIS::MouseEvent &arg, OIS::MouseButtonID id)
 {
+	MyGUI::InputManager::getInstance().injectMouseRelease(arg.state.X.abs, arg.state.Y.abs, MyGUI::MouseButton::Enum(id));
 		if(id == OIS::MB_Left)
 		mLmouseDown = false;
 	else if(id == OIS::MB_Right)
@@ -254,6 +270,22 @@ bool TutorialApplication::mouseReleased(const OIS::MouseEvent &arg, OIS::MouseBu
 	return true;
 }
 
+void TutorialApplication::mousePressed(MyGUI::Widget* _widget)
+{
+	if(_widget != NULL)
+	{
+		if(_widget->getName() == "create")
+		{
+			if(gameState == GameState::EditState)
+				currentUnit = UnitManager::getSingletonPtr()->createUnit();
+		}
+		else if(_widget->getName() == "change")
+		{
+			changeGameState();
+		}
+	}
+}
+
 bool TutorialApplication::nextLocation()
 {
 	if(walkList.empty())
@@ -262,6 +294,17 @@ bool TutorialApplication::nextLocation()
 	walkList.pop_front();
 	direction = destination - currentUnit->getPosition();
 	distance = direction.normalise();
+}
+
+bool TutorialApplication::moveUnitToCell(GameUnit *unit, Cell* cell)
+{
+	finalCell = cell;
+	std::vector<Cell*> path;
+	std::vector<Cell*>::iterator pathItr;
+	path = field->findPath(unit->getCell(), cell);
+	for(pathItr = path.begin(); pathItr != path.end(); pathItr++)
+		walkList.push_front((*pathItr)->getEntity()->getParentSceneNode()->getPosition());
+	return true;
 }
 
 

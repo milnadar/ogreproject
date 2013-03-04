@@ -25,8 +25,9 @@ public:
 	int getH() const {return h;};
 	int getI() const {return ipos;};
 	int getJ() const {return jpos;};
-	void setUnit(GameUnit*) {};
-	void removeUnitFromCell() {};
+	void setUnit(GameUnit*);
+	void removeUnitFromCell();
+	void clear();
 	~Cell();
 private:
 	Ogre::Entity *cellEntity;

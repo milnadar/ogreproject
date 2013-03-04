@@ -42,10 +42,13 @@ protected:
 	bool mousePressedInEditState(const OIS::MouseEvent &arg,OIS::MouseButtonID id);
 	bool mousePressedInPlayState(const OIS::MouseEvent &arg,OIS::MouseButtonID id);
     virtual bool mouseReleased(const OIS::MouseEvent &arg,OIS::MouseButtonID id);
-	bool nextLocation();
+	void mousePressed(MyGUI::Widget* _widget);
 	void setupGUI();
 	void setupScene();
+	void changeGameState();
 private:
+	bool moveUnitToCell(GameUnit*, Cell*);
+	bool nextLocation();
 	Ogre::RaySceneQuery *mRaySceneQuery;// The ray scene query pointer
     bool mLmouseDown, mRmouseDown;		// True if the mouse buttons are down
     float mRotateSpeed;
@@ -59,6 +62,7 @@ private:
 	bool allowedToMove;
 	std::deque<Ogre::Vector3> walkList;
 	GameState gameState;
+	Cell* finalCell;
 };
 
 #endif // #ifndef __TutorialApplication_h_

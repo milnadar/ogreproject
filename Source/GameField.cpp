@@ -184,6 +184,9 @@ std::vector<Cell*> GameField::findPath(const Cell* _start, const Cell* _finish)
 void GameField::clearMap()
 {
 	retrievedPath.clear();
+	for(int i = 0; i < fieldHeight; i++)
+		for(int j = 0; j < fieldWidth; j++)
+			field[i][j]->clear();
 }
 
 Cell* GameField::getCellByIndex(int index1, int index2)
@@ -208,7 +211,6 @@ bool GameField::validateIndexes(int indexi, int indexj)
 
 void GameField::retrievePath(Cell* target)
 {
-	target->getEntity()->getParentSceneNode()->showBoundingBox(true);
 	retrievedPath.push_back(target);
 	if (target->getParent() != NULL)
 		retrievePath(target->getParent());
