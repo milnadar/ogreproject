@@ -36,9 +36,9 @@ void GameField::setupField()
 			field[i][j] = cell;
 			Ogre::Vector3 pos;
 			if(i % 2 != 0)
-				pos = Ogre::Vector3(i * 2.5, 0, (j * 3) + 1.5);
+				pos = Ogre::Vector3(i == 0 ? i * 1.5 : i * 2.2, 0, (j * 2.6) + 1.3);
 			else
-				pos = Ogre::Vector3(i * 2.5, 0, j * 3);
+				pos = Ogre::Vector3(i == 0 ? i * 1.5 : i * 2.2, 0, j * 2.6);
 			ent = sceneMgr->createEntity(name, "cell.mesh");
 			if(i % 2 != 0 && j == 29)
 			{
