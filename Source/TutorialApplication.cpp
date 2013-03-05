@@ -112,6 +112,7 @@ bool TutorialApplication::frameRenderingQueued(const Ogre::FrameEvent &evt)
 		if(distance <= 0.00f)
 		{
 			currentUnit->SetPosition(destination);
+			currentUnit->moveOneStep();
 			direction = Ogre::Vector3::ZERO;
 		}
 		else
@@ -175,6 +176,8 @@ bool TutorialApplication::mousePressed(const OIS::MouseEvent &arg, OIS::MouseBut
 	{
 		mRmouseDown = true;
 		MyGUI::PointerManager::getInstance().setVisible(false);
+		if(currentUnit != NULL)
+			currentUnit->getNode()->showBoundingBox(false);
 		currentUnit = NULL;
 	}
 	if(gameState == GameState::EditState)
@@ -249,6 +252,7 @@ bool TutorialApplication::mousePressedInPlayState(const OIS::MouseEvent &arg,OIS
 				if (itr->movable && itr->movable->getName().find("unit") == 0)
 				{
 					currentUnit = Ogre::any_cast<GameUnit*>(itr->movable->getUserAny());
+					itr->movable->getParentSceneNode()->showBoundingBox(true);
 					break;
 				}
 			}
@@ -293,6 +297,7 @@ void TutorialApplication::buttonClicked(MyGUI::Widget* _widget)
 				currentPlayer = Players::player2;
 			else
 				currentPlayer = Players::player1;
+			UnitManager::getSingletonPtr()->resetUnitsStats();
 		}
 	}
 }
@@ -309,10 +314,12 @@ bool TutorialApplication::nextLocation()
 
 bool TutorialApplication::moveUnitToCell(GameUnit *unit, Cell* cell)
 {
-	finalCell = cell;
 	std::vector<Cell*> path;
 	std::vector<Cell*>::iterator pathItr;
 	path = field->findPath(unit->getCell(), cell);
+	if(path.size() > unit->stepsLeftToMove())
+		return false;
+	finalCell = cell;
 	for(pathItr = path.begin(); pathItr != path.end(); pathItr++)
 		{walkList.push_front((*pathItr)->getEntity()->getParentSceneNode()->getPosition());
 	}

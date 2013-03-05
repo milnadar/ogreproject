@@ -24,3 +24,39 @@ GameUnit* UnitManager::createUnit(int player)
 	}
 	return unit;
 }
+
+bool UnitManager::createSquad(int player)
+{
+	for(int i = 0; i < 5; i++)
+		createUnit(player);
+}
+
+GameUnit* UnitManager::getUnitByName(Ogre::String name)
+{
+	GameUnit *unit = NULL;
+	for(iterator = units.begin(); iterator != units.end(); iterator++)
+		if((*iterator)->getUnitName() == name)
+		{
+			unit = *iterator;
+			break;
+		}
+	return unit;
+}
+
+void UnitManager::resetUnitsStats()
+{
+	for(iterator = units.begin(); iterator != units.end(); iterator++)
+	{
+		if(*iterator != NULL)
+			(*iterator)->resetTurnStats();
+	}
+}
+
+std::vector<Ogre::String> UnitManager::getPlayerUnits(int player)
+{
+	std::vector<Ogre::String> vector;
+	for(iterator = units.begin(); iterator != units.end(); iterator++)
+		if((*iterator)->getOwner() == player)
+			vector.push_back((*iterator)->getUnitName());
+	return vector;
+}

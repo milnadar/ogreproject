@@ -5,6 +5,7 @@
 #include "OgreSingleton.h"
 
 class GameUnit;
+struct Squad;
 
 class UnitManager : public Ogre::Singleton<UnitManager>
 {
@@ -12,8 +13,13 @@ public:
 	UnitManager(Ogre::SceneManager*);
 	~UnitManager();
 	GameUnit* createUnit(int player);
+	bool createSquad(int player);
+	GameUnit* getUnitByName(Ogre::String name);
+	void resetUnitsStats();
+	std::vector<Ogre::String> getPlayerUnits(int player);
 private:
 	std::vector<GameUnit*> units;
+	std::vector<GameUnit*>::iterator iterator;
 	Ogre::SceneManager *sceneManager;
 	int unitCounter;
 };

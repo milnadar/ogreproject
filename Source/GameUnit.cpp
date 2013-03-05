@@ -3,6 +3,15 @@
 GameUnit::GameUnit(int id, int player, Ogre::SceneManager *manager) : sceneManager(manager), unitDirection(Ogre::Vector3::ZERO),
 	unitCell(NULL), unitNode(NULL), unitEntity(NULL), owner(player)
 {
+	movementSpeed = 4;
+	stepsLeft = movementSpeed;
+	armor = 5;
+	meleAttack = 3;
+	numberAttacks = 1;
+	attackPower = 6;
+	canPerformMovement = true;
+	canPerformRangeAttack = true;
+	canPerformMeleAttack = true;
 	unitName = "unit" + Ogre::StringConverter::toString(id);
 	if(sceneManager)
 	{
@@ -42,4 +51,18 @@ bool GameUnit::TranslateUnit(Ogre::Vector3 &vector)
 		return true;
 	}
 	return false;
+}
+
+void GameUnit::moveOneStep()
+{
+	if(--stepsLeft < 0)
+		stepsLeft = 0;
+}
+
+void GameUnit::resetTurnStats()
+{
+	canPerformMovement = true;
+	canPerformRangeAttack = true;
+	canPerformMeleAttack = true;
+	stepsLeft = movementSpeed;
 }

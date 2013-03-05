@@ -1,13 +1,20 @@
-material Cell
+material 02-Default
 {
-    technique
-    {
-        pass
-        {
-		    texture_unit
+	technique
+	{
+		pass
+		{
+			ambient 0.588235 0.588235 0.588235 1
+			diffuse 0.588235 0.588235 0.588235 1
+			specular 0 0 0 1 10
+			scene_blend one one_minus_src_alpha
+
+			texture_unit
 			{
-			    texture cell.png
+				texture cell.png
 			}
-        }
-    }
+		}
+
+	}
+
 }
