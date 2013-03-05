@@ -43,7 +43,9 @@ protected:
 	bool mousePressedInPlayState(const OIS::MouseEvent &arg,OIS::MouseButtonID id);
     virtual bool mouseReleased(const OIS::MouseEvent &arg,OIS::MouseButtonID id);
 	void buttonClicked(MyGUI::Widget* _widget);
+	void itemAcceptedCallback(MyGUI::ListBox* _sender, size_t _index);
 	void setupGUI();
+	void updateUnitListForCurrentPlayer();
 	void setupScene();
 	void changeGameState();
 private:

@@ -29,6 +29,7 @@ bool UnitManager::createSquad(int player)
 {
 	for(int i = 0; i < 5; i++)
 		createUnit(player);
+	return true;
 }
 
 GameUnit* UnitManager::getUnitByName(Ogre::String name)

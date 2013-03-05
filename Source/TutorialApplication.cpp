@@ -69,6 +69,21 @@ void TutorialApplication::setupGUI()
 	button = gui->createWidget<MyGUI::Button>("Button", 10, 82, 300, 26, MyGUI::Align::Default, "Main", "changePlayerButton");
 	button->setCaption("Change player");
 	button->eventMouseButtonClick = MyGUI::newDelegate(this, &TutorialApplication::buttonClicked);
+	MyGUI::ListBox *list = gui->createWidget<MyGUI::ListBox>("ListBox", 10, 120, 300, 100, MyGUI::Align::Default, "Main", "unitList");
+	list->eventListSelectAccept += MyGUI::newDelegate(this, &TutorialApplication::itemAcceptedCallback);
+}
+
+void TutorialApplication::updateUnitListForCurrentPlayer()
+{
+	std::vector<Ogre::String> names = UnitManager::getSingletonPtr()->getPlayerUnits(currentPlayer);
+	MyGUI::ListBox *listBox = MyGUI::Gui::getInstance().findWidget<MyGUI::ListBox>("unitList");
+	if(listBox)
+	{
+		listBox->deleteAllItems();
+		std::vector<Ogre::String>::iterator itr;
+		for(itr = names.begin(); itr != names.end(); itr++)
+			listBox->addItem(*itr);
+	}
 }
 
 void TutorialApplication::setupScene()
@@ -78,6 +93,8 @@ void TutorialApplication::setupScene()
 	field->setupField();
 	currentUnit = UnitManager::getSingletonPtr()->createUnit(currentPlayer);
 	field->setUnitOnCell(field->getCellByIndex(0, 0), currentUnit);
+	UnitManager::getSingletonPtr()->createSquad(currentPlayer);
+	updateUnitListForCurrentPlayer();
 	//Ogre::Entity *entity = mSceneMgr->createEntity("tube", "tube.mesh");
 	//Ogre::SceneNode *node = mSceneMgr->getRootSceneNode()->createChildSceneNode("nodetube");
 	//node->attachObject(entity);
@@ -297,9 +314,16 @@ void TutorialApplication::buttonClicked(MyGUI::Widget* _widget)
 				currentPlayer = Players::player2;
 			else
 				currentPlayer = Players::player1;
+			updateUnitListForCurrentPlayer();
 			UnitManager::getSingletonPtr()->resetUnitsStats();
 		}
 	}
+}
+
+void TutorialApplication::itemAcceptedCallback(MyGUI::ListBox* _sender, size_t _index)
+{
+	Ogre::String str = _sender->getItem(_index);
+	currentUnit = UnitManager::getSingletonPtr()->getUnitByName(str);
 }
 
 bool TutorialApplication::nextLocation()
