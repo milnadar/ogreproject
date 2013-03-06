@@ -1,5 +1,11 @@
 #include "GameUnit.h"
 
+UnitStats::UnitStats(int _speed, int _armor, int _mele, int _numberAttacks, int _attackPower) : movementSpeed(_speed),
+	armor(_armor), meleAttack(_mele), numberAttacks(_numberAttacks), attackPower(_attackPower)
+{
+	//
+}
+
 GameUnit::GameUnit(int id, int player, Ogre::SceneManager *manager) : sceneManager(manager), unitDirection(Ogre::Vector3::ZERO),
 	unitCell(NULL), unitNode(NULL), unitEntity(NULL), owner(player), animationState(NULL)
 {
@@ -13,7 +19,8 @@ GameUnit::GameUnit(int id, int player, Ogre::SceneManager *manager) : sceneManag
 	canPerformMovement = true;
 	canPerformRangeAttack = true;
 	canPerformMeleAttack = true;
-	mCanPerformAction = true;
+	blocked = false;
+	alive = true;
 	unitName = "unit" + Ogre::StringConverter::toString(id);
 	if(sceneManager)
 	{
@@ -84,7 +91,7 @@ void GameUnit::addTime(Ogre::Real deltaTime)
 
 void GameUnit::startAnimation(AnimationList animation, bool loop = true)
 {
-	Ogre::String unitAnimations[] = {"Walk", "idle", "Shoot"};
+	Ogre::String unitAnimations[] = {"Walk", "idle", "Shoot", "Die"};
 	animationState = unitEntity->getAnimationState(unitAnimations[animation]);
 	animationState->setLoop(loop);
 	animationState->setEnabled(true);
@@ -92,5 +99,12 @@ void GameUnit::startAnimation(AnimationList animation, bool loop = true)
 
 void GameUnit::stopAnimation()
 {
-	animationState->setEnabled(false);
+	if(animationState != NULL)
+		animationState->setEnabled(false);
+}
+
+void GameUnit::resetAnimation()
+{
+	if(animationState != NULL)
+		animationState->setTimePosition(0);
 }

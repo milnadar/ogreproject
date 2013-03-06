@@ -20,7 +20,6 @@ This source file is part of the
 //-------------------------------------------------------------------------------------
 TutorialApplication::TutorialApplication(void)
 {
-	av = true;
 	currentUnit = NULL;
 	finalCell = NULL;
 	attacker = NULL;
@@ -283,6 +282,7 @@ bool TutorialApplication::mousePressedInPlayState(const OIS::MouseEvent &arg,OIS
 		MyGUI::IntPoint position = MyGUI::InputManager::getInstance().getMousePosition();
 		Ogre::Ray mouseRay = mCamera->getCameraToViewportRay(position.left/float(arg.state.width),position.top/float(arg.state.height));
         mRaySceneQuery->setRay(mouseRay);
+		mRaySceneQuery->setSortByDistance(true);
  
         Ogre::RaySceneQueryResult &result = mRaySceneQuery->execute();
         Ogre::RaySceneQueryResult::iterator itr;
@@ -294,6 +294,12 @@ bool TutorialApplication::mousePressedInPlayState(const OIS::MouseEvent &arg,OIS
 				{
 					Cell* cell = Ogre::any_cast<Cell*>(itr->movable->getUserAny());
 					moveUnitToCell(currentUnit, cell);
+					break;
+				}
+				else if(itr->movable && itr->movable->getName().find("unit") == 0)
+				{
+					attacker = currentUnit;
+					target = Ogre::any_cast<GameUnit*>(itr->movable->getUserAny());
 					break;
 				}
 			}
@@ -343,14 +349,12 @@ void TutorialApplication::buttonClicked(MyGUI::Widget* _widget)
 		}
 		else if(_widget->getName() == "changePlayerButton")
 		{
-			/*if(currentPlayer == Players::player1)
+			if(currentPlayer == Players::player1)
 				currentPlayer = Players::player2;
 			else
 				currentPlayer = Players::player1;
 			updateUnitListForCurrentPlayer();
-			UnitManager::getSingletonPtr()->resetUnitsStats();*/
-			attacker = currentUnit;//UnitManager::getSingletonPtr()->getUnitByName("unit0");
-			//target = UnitManager::getSingletonPtr()->getUnitByName("unit01");
+			UnitManager::getSingletonPtr()->resetUnitsStats();
 		}
 	}
 }
@@ -388,22 +392,31 @@ bool TutorialApplication::moveUnitToCell(GameUnit *unit, Cell* cell)
 
 void TutorialApplication::attackScenario()
 {
-	if(attacker != NULL)
+	if(attacker != NULL && target != NULL)
 	{
-		if(attacker->getNumberOfAttacksLeft() > 0)
+		if(attacker->canShoot())
 		{
-			if(attacker->canPerformAction())
+			if(!attacker->isBlocked())
 			{
-				attacker->setActionAvailable(false);
+				attacker->setBlocked(true);
 				attacker->makeOneShot();
 				attacker->startAnimation(GameUnit::AnimationList::SHOOT_ANIMATION, false);
+				if(bool result = calculateRangeAttack(attacker->getUnitStats(), target->getUnitStats()))
+					target->kill();
 			}
 			if(attacker->getAnimationState()->hasEnded())
 			{
-				attacker->getAnimationState()->setTimePosition(0);
-				attacker->setActionAvailable(true);
+				attacker->resetAnimation();
+				attacker->setBlocked(false);
+				if(!target->isAlive())
+					attacker = NULL;
 			}
 		}
+	}
+	if(target != NULL && !target->isAlive())
+	{
+		target->startAnimation(GameUnit::AnimationList::DEATH_ANIMATION, false);
+		target = NULL;
 	}
 }
 

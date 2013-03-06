@@ -49,6 +49,7 @@ protected:
 	void setupScene();
 	void changeGameState();
 	void attackScenario();
+	bool calculateRangeAttack(const UnitStats& attacker, const UnitStats& target) {return true;};
 private:
 	enum Players {player1 = 1, player2};
 	bool moveUnitToCell(GameUnit*, Cell*);

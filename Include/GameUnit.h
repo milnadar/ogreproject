@@ -7,31 +7,48 @@
 
 class Cell;
 
+struct UnitStats{
+	explicit UnitStats(int _speed, int _armor, int _mele, int _numberAttacks, int _attackPower);
+	UnitStats() {};
+	int movementSpeed;
+	int armor;
+	int meleAttack;
+	int numberAttacks;
+	int attackPower;
+};
+
 class GameUnit
 {
 public:
-	enum AnimationList {WALK_ANIMATION, IDLE_ANIMATION, SHOOT_ANIMATION};
+	enum AnimationList {WALK_ANIMATION, IDLE_ANIMATION, SHOOT_ANIMATION, DEATH_ANIMATION};
 	GameUnit(int id, int player, Ogre::SceneManager *manager);
 	~GameUnit() {};
 	Cell* getCell() {return unitCell;};
 	void setUnitCell(Cell* newCell) {unitCell = newCell;};
 	Ogre::String getUnitName() const {return unitName;};
-	int getOwner() {return owner;};
+	int getOwner() const {return owner;};
 	void SetPosition(Ogre::Vector3&);
 	Ogre::Vector3 getPosition();
 	bool TranslateUnit(Ogre::Vector3&);
 	void moveOneStep();
 	void makeOneShot();
 	int stepsLeftToMove() {return stepsLeft;};
-	int getNumberOfAttacksLeft() {return numberAttacksLeft;};
+	int getNumberOfAttacksLeft() const {return numberAttacksLeft;};
 	void resetTurnStats();
-	Ogre::SceneNode* getNode() {return unitNode;};
+	Ogre::SceneNode* getNode() const {return unitNode;};
+	//unit methods for performing animation
 	void addTime(Ogre::Real);
 	void startAnimation(AnimationList, bool loop);
 	void stopAnimation();
-	Ogre::AnimationState* getAnimationState() {return animationState;};
-	bool canPerformAction() {return mCanPerformAction;};
-	void setActionAvailable(bool action) {mCanPerformAction = action;};
+	void resetAnimation();
+	Ogre::AnimationState* getAnimationState() const {return animationState;};
+	bool isBlocked() const {return blocked;};
+	//returns true if unit has more available shots in current turn
+	bool canShoot() const {return numberAttacksLeft > 0;};
+	void setBlocked(bool action) {blocked = action;};
+	void kill() {alive = false;};
+	bool isAlive() const {return alive;};
+	const UnitStats& getUnitStats() const {return unitStats;};
 private:
 	Ogre::Entity *unitEntity;
 	Ogre::SceneNode *unitNode;
@@ -43,6 +60,7 @@ private:
 	Ogre::SceneManager *sceneManager;
 	int owner;
 	//unit stats
+	UnitStats unitStats;
 	int movementSpeed;
 	int stepsLeft;
 	int armor;
@@ -53,7 +71,8 @@ private:
 	bool canPerformMovement;
 	bool canPerformRangeAttack;
 	bool canPerformMeleAttack;
-	bool mCanPerformAction;
+	bool blocked;
+	bool alive;
 };
 
 #endif
