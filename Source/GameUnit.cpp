@@ -1,17 +1,19 @@
 #include "GameUnit.h"
 
 GameUnit::GameUnit(int id, int player, Ogre::SceneManager *manager) : sceneManager(manager), unitDirection(Ogre::Vector3::ZERO),
-	unitCell(NULL), unitNode(NULL), unitEntity(NULL), owner(player)
+	unitCell(NULL), unitNode(NULL), unitEntity(NULL), owner(player), animationState(NULL)
 {
 	movementSpeed = 4;
 	stepsLeft = movementSpeed;
 	armor = 5;
 	meleAttack = 3;
-	numberAttacks = 1;
+	numberAttacks = 3;
+	numberAttacksLeft = numberAttacks;
 	attackPower = 6;
 	canPerformMovement = true;
 	canPerformRangeAttack = true;
 	canPerformMeleAttack = true;
+	mCanPerformAction = true;
 	unitName = "unit" + Ogre::StringConverter::toString(id);
 	if(sceneManager)
 	{
@@ -59,10 +61,36 @@ void GameUnit::moveOneStep()
 		stepsLeft = 0;
 }
 
+void GameUnit::makeOneShot()
+{
+	if(--numberAttacksLeft < 0)
+		numberAttacksLeft = 0;
+}
+
 void GameUnit::resetTurnStats()
 {
 	canPerformMovement = true;
 	canPerformRangeAttack = true;
 	canPerformMeleAttack = true;
 	stepsLeft = movementSpeed;
+	numberAttacksLeft = numberAttacks;
+}
+
+void GameUnit::addTime(Ogre::Real deltaTime)
+{
+	if(animationState != NULL)
+		animationState->addTime(deltaTime);
+}
+
+void GameUnit::startAnimation(AnimationList animation, bool loop = true)
+{
+	Ogre::String unitAnimations[] = {"Walk", "idle", "Shoot"};
+	animationState = unitEntity->getAnimationState(unitAnimations[animation]);
+	animationState->setLoop(loop);
+	animationState->setEnabled(true);
+}
+
+void GameUnit::stopAnimation()
+{
+	animationState->setEnabled(false);
 }

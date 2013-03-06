@@ -17,6 +17,7 @@ public:
 	GameUnit* getUnitByName(Ogre::String name);
 	void resetUnitsStats();
 	std::vector<Ogre::String> getPlayerUnits(int player);
+	void addTime(Ogre::Real);
 private:
 	std::vector<GameUnit*> units;
 	std::vector<GameUnit*>::iterator iterator;

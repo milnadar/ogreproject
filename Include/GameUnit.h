@@ -10,6 +10,7 @@ class Cell;
 class GameUnit
 {
 public:
+	enum AnimationList {WALK_ANIMATION, IDLE_ANIMATION, SHOOT_ANIMATION};
 	GameUnit(int id, int player, Ogre::SceneManager *manager);
 	~GameUnit() {};
 	Cell* getCell() {return unitCell;};
@@ -20,15 +21,24 @@ public:
 	Ogre::Vector3 getPosition();
 	bool TranslateUnit(Ogre::Vector3&);
 	void moveOneStep();
+	void makeOneShot();
 	int stepsLeftToMove() {return stepsLeft;};
+	int getNumberOfAttacksLeft() {return numberAttacksLeft;};
 	void resetTurnStats();
 	Ogre::SceneNode* getNode() {return unitNode;};
+	void addTime(Ogre::Real);
+	void startAnimation(AnimationList, bool loop);
+	void stopAnimation();
+	Ogre::AnimationState* getAnimationState() {return animationState;};
+	bool canPerformAction() {return mCanPerformAction;};
+	void setActionAvailable(bool action) {mCanPerformAction = action;};
 private:
 	Ogre::Entity *unitEntity;
 	Ogre::SceneNode *unitNode;
 	Ogre::String unitName;
 	Ogre::String idName;
 	Ogre::Vector3 unitDirection;
+	Ogre::AnimationState *animationState;
 	Cell* unitCell;
 	Ogre::SceneManager *sceneManager;
 	int owner;
@@ -38,10 +48,12 @@ private:
 	int armor;
 	int meleAttack;
 	int numberAttacks;
+	int numberAttacksLeft;
 	int attackPower;
 	bool canPerformMovement;
 	bool canPerformRangeAttack;
 	bool canPerformMeleAttack;
+	bool mCanPerformAction;
 };
 
 #endif

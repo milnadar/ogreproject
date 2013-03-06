@@ -20,8 +20,11 @@ This source file is part of the
 //-------------------------------------------------------------------------------------
 TutorialApplication::TutorialApplication(void)
 {
+	av = true;
 	currentUnit = NULL;
 	finalCell = NULL;
+	attacker = NULL;
+	target = NULL;
 	gameState = GameState::PlayState;
 	currentPlayer = Players::player1;
 }
@@ -71,6 +74,7 @@ void TutorialApplication::setupGUI()
 	button->eventMouseButtonClick = MyGUI::newDelegate(this, &TutorialApplication::buttonClicked);
 	MyGUI::ListBox *list = gui->createWidget<MyGUI::ListBox>("ListBox", 10, 120, 300, 100, MyGUI::Align::Default, "Main", "unitList");
 	list->eventListSelectAccept += MyGUI::newDelegate(this, &TutorialApplication::itemAcceptedCallback);
+	list->setVisible(false);
 }
 
 void TutorialApplication::updateUnitListForCurrentPlayer()
@@ -104,22 +108,32 @@ void TutorialApplication::setupScene()
 
 void TutorialApplication::changeGameState()
 {
+	MyGUI::ListBox *listBox = MyGUI::Gui::getInstance().findWidget<MyGUI::ListBox>("unitList");
 	if(gameState == GameState::PlayState)
+	{
 		gameState = GameState::EditState;
+		listBox->setVisible(true);
+	}
 	else
+	{
 		gameState = GameState::PlayState;
+		listBox->setVisible(false);
+	}
 	currentUnit = NULL;
 }
 
 bool TutorialApplication::frameRenderingQueued(const Ogre::FrameEvent &evt)
 {
-	//
+	UnitManager::getSingletonPtr()->addTime(evt.timeSinceLastFrame);
+	attackScenario();
 	if(direction == Ogre::Vector3::ZERO)
 	{
-		if(!nextLocation() && currentUnit != NULL && finalCell != NULL)
+		if(nextLocation())
 		{
-			field->setUnitOnCell(finalCell, currentUnit);
-			finalCell = NULL;
+			Ogre::Vector3 src = currentUnit->getNode()->getOrientation() * Ogre::Vector3::UNIT_X;
+			Ogre::Quaternion quat = src.getRotationTo(direction);
+			currentUnit->getNode()->rotate(quat);
+			currentUnit->startAnimation(GameUnit::AnimationList::WALK_ANIMATION, true);
 		}
 	}
 	else
@@ -131,6 +145,25 @@ bool TutorialApplication::frameRenderingQueued(const Ogre::FrameEvent &evt)
 			currentUnit->SetPosition(destination);
 			currentUnit->moveOneStep();
 			direction = Ogre::Vector3::ZERO;
+			if(!nextLocation())
+			{
+				currentUnit->stopAnimation();
+				field->setUnitOnCell(finalCell, currentUnit);
+				finalCell = NULL;
+			}
+			else
+			{
+				Ogre::Vector3 src = currentUnit->getNode()->getOrientation() * Ogre::Vector3::UNIT_X;
+				if ((1.0f + src.dotProduct(direction)) < 0.0001f) 
+				{
+					currentUnit->getNode()->yaw(Ogre::Degree(180));
+				}
+				else
+				{
+					Ogre::Quaternion quat = src.getRotationTo(direction);
+					currentUnit->getNode()->rotate(quat);
+				} // else
+			}
 		}
 		else
 		{
@@ -310,12 +343,14 @@ void TutorialApplication::buttonClicked(MyGUI::Widget* _widget)
 		}
 		else if(_widget->getName() == "changePlayerButton")
 		{
-			if(currentPlayer == Players::player1)
+			/*if(currentPlayer == Players::player1)
 				currentPlayer = Players::player2;
 			else
 				currentPlayer = Players::player1;
 			updateUnitListForCurrentPlayer();
-			UnitManager::getSingletonPtr()->resetUnitsStats();
+			UnitManager::getSingletonPtr()->resetUnitsStats();*/
+			attacker = currentUnit;//UnitManager::getSingletonPtr()->getUnitByName("unit0");
+			//target = UnitManager::getSingletonPtr()->getUnitByName("unit01");
 		}
 	}
 }
@@ -334,6 +369,7 @@ bool TutorialApplication::nextLocation()
 	walkList.pop_front();
 	direction = destination - currentUnit->getPosition();
 	distance = direction.normalise();
+	return true;
 }
 
 bool TutorialApplication::moveUnitToCell(GameUnit *unit, Cell* cell)
@@ -350,6 +386,26 @@ bool TutorialApplication::moveUnitToCell(GameUnit *unit, Cell* cell)
 	return true;
 }
 
+void TutorialApplication::attackScenario()
+{
+	if(attacker != NULL)
+	{
+		if(attacker->getNumberOfAttacksLeft() > 0)
+		{
+			if(attacker->canPerformAction())
+			{
+				attacker->setActionAvailable(false);
+				attacker->makeOneShot();
+				attacker->startAnimation(GameUnit::AnimationList::SHOOT_ANIMATION, false);
+			}
+			if(attacker->getAnimationState()->hasEnded())
+			{
+				attacker->getAnimationState()->setTimePosition(0);
+				attacker->setActionAvailable(true);
+			}
+		}
+	}
+}
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 #define WIN32_LEAN_AND_MEAN

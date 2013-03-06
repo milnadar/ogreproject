@@ -61,3 +61,10 @@ std::vector<Ogre::String> UnitManager::getPlayerUnits(int player)
 			vector.push_back((*iterator)->getUnitName());
 	return vector;
 }
+
+void UnitManager::addTime(Ogre::Real deltaTime)
+{
+	for(iterator = units.begin(); iterator != units.end(); iterator++)
+		if(*iterator != NULL)
+			(*iterator)->addTime(deltaTime);
+}

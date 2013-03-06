@@ -48,6 +48,7 @@ protected:
 	void updateUnitListForCurrentPlayer();
 	void setupScene();
 	void changeGameState();
+	void attackScenario();
 private:
 	enum Players {player1 = 1, player2};
 	bool moveUnitToCell(GameUnit*, Cell*);
@@ -58,6 +59,9 @@ private:
 	MyGUI::ButtonPtr button;
 	GameField *field;
 	GameUnit *currentUnit;
+	//
+	GameUnit *attacker;
+	GameUnit *target;
 	Ogre::Real distance;
 	Ogre::Vector3 destination;
 	Ogre::Vector3 direction;
