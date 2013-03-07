@@ -44,6 +44,7 @@ protected:
     virtual bool mouseReleased(const OIS::MouseEvent &arg,OIS::MouseButtonID id);
 	void buttonClicked(MyGUI::Widget* _widget);
 	void itemAcceptedCallback(MyGUI::ListBox* _sender, size_t _index);
+	void consoleOutput(Ogre::String);
 	void setupGUI();
 	void updateUnitListForCurrentPlayer();
 	void setupScene();
@@ -58,6 +59,7 @@ private:
     bool mLmouseDown, mRmouseDown;		// True if the mouse buttons are down
     float mRotateSpeed;
 	MyGUI::ButtonPtr button;
+	MyGUI::EditBox *gameConsole;
 	GameField *field;
 	GameUnit *currentUnit;
 	//

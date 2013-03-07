@@ -2,8 +2,8 @@
 
 GameField::GameField(Ogre::SceneManager* mgr) : sceneMgr(mgr)
 {
-	fieldWidth = 20;
-	fieldHeight = 30;
+	fieldWidth = 10;
+	fieldHeight = 20;
 	std::vector<Cell*> tmp;
 	for(int i = 0; i < fieldHeight; i++)
 	{
@@ -40,7 +40,7 @@ void GameField::setupField()
 			else
 				pos = Ogre::Vector3(i == 0 ? i * 1.5 : i * 2.2, 0, j * 2.6);
 			ent = sceneMgr->createEntity(name, "cell.mesh");
-			if(i % 2 != 0 && j == 29)
+			if(i % 2 != 0 && j == fieldHeight - 1)
 			{
 				ent->setVisible(false);
 				cell->setState(1);
@@ -89,6 +89,7 @@ bool GameField::setUnitOnCell(int indexi, int indexj, GameUnit* unit)
 
 std::vector<Cell*> GameField::findPath(const Cell* _start, const Cell* _finish)
 {
+	bool fin = false;
 	std::list<Cell*> opened;
 	std::list<Cell*> closed;
 	Cell *current = NULL;
@@ -108,7 +109,8 @@ std::vector<Cell*> GameField::findPath(const Cell* _start, const Cell* _finish)
 		return tmpPath;
 	}
 	opened.push_back(start);
-	while ((!listContains (closed, finish)) && (opened.size() != 0))
+	//while ((!listContains (closed, finish)) && (opened.size() != 0))
+	while ((!fin) && (opened.size() != 0))
 	{
 		current = getLowestF(opened);
 		if (current == NULL)
@@ -117,7 +119,10 @@ std::vector<Cell*> GameField::findPath(const Cell* _start, const Cell* _finish)
 			break;
 		}//if
 		opened.remove(current);
+		if(current == finish)
+			fin = true;
 		closed.push_back(current);
+		current->setClosed(true);
 		for (int index = 0; index < 6; index++)
 		{
 			if (current->getI() % 2 == 0)
@@ -147,7 +152,8 @@ std::vector<Cell*> GameField::findPath(const Cell* _start, const Cell* _finish)
 			}//switch
 			if (child == NULL)
 				continue;
-			if (child->isWalkable() && !listContains (closed, child))
+			//if (child->isWalkable() && !listContains (closed, child))
+			if (child->isWalkable() && !child->isClosed())
 			{
 				if (!listContains(opened, child))
 				{

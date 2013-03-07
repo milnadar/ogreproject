@@ -26,6 +26,8 @@ public:
 	int getH() const {return h;};
 	int getI() const {return ipos;};
 	int getJ() const {return jpos;};
+	void setClosed(bool value) {closed = value;};
+	bool isClosed() {return closed;};
 	void setUnit(GameUnit*);
 	void removeUnitFromCell();
 	void clear();
@@ -39,6 +41,7 @@ private:
 	int g;
 	int h;
 	int state;
+	bool closed;
 	Ogre::String idname;
 	Cell* parent;
 	//Unit *unit;

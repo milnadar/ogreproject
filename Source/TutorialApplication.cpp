@@ -24,6 +24,7 @@ TutorialApplication::TutorialApplication(void)
 	finalCell = NULL;
 	attacker = NULL;
 	target = NULL;
+	gameConsole = NULL;
 	gameState = GameState::PlayState;
 	currentPlayer = Players::player1;
 }
@@ -74,6 +75,10 @@ void TutorialApplication::setupGUI()
 	MyGUI::ListBox *list = gui->createWidget<MyGUI::ListBox>("ListBox", 10, 120, 300, 100, MyGUI::Align::Default, "Main", "unitList");
 	list->eventListSelectAccept += MyGUI::newDelegate(this, &TutorialApplication::itemAcceptedCallback);
 	list->setVisible(false);
+	gameConsole = gui->createWidget<MyGUI::EditBox>("EditBox",500, 780, 500, 150, MyGUI::Align::Default, "Main", "console");
+	gameConsole->setEditReadOnly(true);
+	gameConsole->setEditMultiLine(true);
+	gameConsole->setTextAlign(MyGUI::Align::Bottom | MyGUI::Align::Left);
 }
 
 void TutorialApplication::updateUnitListForCurrentPlayer()
@@ -309,6 +314,7 @@ bool TutorialApplication::mousePressedInPlayState(const OIS::MouseEvent &arg,OIS
 				{
 					currentUnit = Ogre::any_cast<GameUnit*>(itr->movable->getUserAny());
 					itr->movable->getParentSceneNode()->showBoundingBox(true);
+					consoleOutput("Selected unit " + currentUnit->getUnitName());
 					break;
 				}
 			}
@@ -387,6 +393,7 @@ bool TutorialApplication::moveUnitToCell(GameUnit *unit, Cell* cell)
 	for(pathItr = path.begin(); pathItr != path.end(); pathItr++)
 		{walkList.push_front((*pathItr)->getEntity()->getParentSceneNode()->getPosition());
 	}
+	consoleOutput("Unit " + unit->getUnitName() + " moved to cell " + cell->getName());
 	return true;
 }
 
@@ -417,6 +424,14 @@ void TutorialApplication::attackScenario()
 	{
 		target->startAnimation(GameUnit::AnimationList::DEATH_ANIMATION, false);
 		target = NULL;
+	}
+}
+
+void TutorialApplication::consoleOutput(Ogre::String string)
+{
+	if(gameConsole)
+	{
+		gameConsole->addText(string + '\n');
 	}
 }
 
