@@ -1,4 +1,5 @@
 #include "GameField.h"
+#include "OgreMeshManager.h"
 
 GameField::GameField(Ogre::SceneManager* mgr) : sceneMgr(mgr)
 {
@@ -50,6 +51,14 @@ void GameField::setupField()
 			cell->setCellEntity(ent);
 			ent->setUserAny(Ogre::Any(cell));
 		}
+		Ogre::Plane plane(Ogre::Vector3::UNIT_Y, 0);
+		Ogre::MeshManager::getSingleton().createPlane("ground", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, plane, fieldHeight * 5, fieldWidth * 6, 20, 20, true, 1, 5, 5, Ogre::Vector3::UNIT_Z);
+		Ogre::Entity* entGround = sceneMgr->createEntity("GroundEntity", "ground");
+		node = sceneMgr->getRootSceneNode()->createChildSceneNode();
+		node->attachObject(entGround);
+		entGround->setMaterialName("field");
+		entGround->setCastShadows(false);
+		node->setPosition(fieldHeight, -1, fieldWidth);
 }
 
 bool GameField::setUnitOnCell(Cell *cell, GameUnit* unit)

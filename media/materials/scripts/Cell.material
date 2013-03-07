@@ -4,14 +4,21 @@ material 02-Default
 	{
 		pass
 		{
-			ambient 0.588235 0.588235 0.588235 1
-			diffuse 0.588235 0.588235 0.588235 1
-			specular 0 0 0 1 10
-			scene_blend one one_minus_src_alpha
+	                ambient 1 1 1 1
+         	        diffuse 1 1 1 1
+  	                specular 0 0 0 0
+         	        emissive 0 0 0
+ 
+ 	                scene_blend alpha_blend
+          	        depth_write off
+
 
 			texture_unit
 			{
-				texture cell.png
+				texture cell_transparent.png
+     	                        tex_coord_set 0
+                	        colour_op modulate
+
 			}
 		}
 

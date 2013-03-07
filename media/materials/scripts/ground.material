@@ -1,0 +1,17 @@
+material field
+{
+	technique
+	{
+		pass
+		{
+ 
+			texture_unit
+			{
+				texture dirt01.jpg
+				scale 0.7 0.7
+			}
+		}
+
+	}
+
+}
