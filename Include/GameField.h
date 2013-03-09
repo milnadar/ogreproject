@@ -21,8 +21,12 @@ public:
 	bool setUnitOnCell(int, int, GameUnit*);
 	bool setUnitOnCell(Cell*, GameUnit*);
 	//bool setUnitOnCell(const Cell*, GameUnit*); ---?
+	void showavailableCellsToMove(GameUnit *unit);
+	void setAvailableCellsInRadius(Cell *cell, int radius, bool available);
 private:
 	bool validateIndexes(int, int);
+	Cell *lastCell;
+	int lastRadius;
 	void retrievePath(Cell*);
 	bool listContains(std::list<Cell*>&, Cell*);
 	int heuristic (Cell*, Cell*);

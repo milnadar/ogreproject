@@ -47,10 +47,14 @@ protected:
 	void consoleOutput(Ogre::String);
 	void setupGUI();
 	void updateUnitListForCurrentPlayer();
+	void updateUnitInformation() {};
 	void setupScene();
 	void changeGameState();
+	void selectUnit(GameUnit *unit);
+	void deselectCurrentUnit();
+	void endTurn();
 	void attackScenario();
-	bool calculateRangeAttack(const UnitStats& attacker, const UnitStats& target) {return true;};
+	bool calculateRangeAttack(const UnitStats& attacker, const UnitStats& target);
 private:
 	enum Players {player1 = 1, player2};
 	bool moveUnitToCell(GameUnit*, Cell*);
@@ -70,6 +74,7 @@ private:
 	Ogre::Vector3 direction;
 	Ogre::Real walkSpeed;
 	bool allowedToMove;
+	bool interfaceBlocked;
 	std::deque<Ogre::Vector3> walkList;
 	GameState gameState;
 	Players currentPlayer;

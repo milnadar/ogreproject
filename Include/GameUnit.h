@@ -33,7 +33,7 @@ public:
 	void moveOneStep();
 	void makeOneShot();
 	int stepsLeftToMove() {return stepsLeft;};
-	int getNumberOfAttacksLeft() const {return numberAttacksLeft;};
+	int hasMoreShots() const {return numberAttacksLeft > 0;};
 	void resetTurnStats();
 	Ogre::SceneNode* getNode() const {return unitNode;};
 	//unit methods for performing animation
@@ -44,7 +44,7 @@ public:
 	Ogre::AnimationState* getAnimationState() const {return animationState;};
 	bool isBlocked() const {return blocked;};
 	//returns true if unit has more available shots in current turn
-	bool canShoot() const {return numberAttacksLeft > 0;};
+	bool canShoot() const {return canPerformRangeAttack;};
 	void setBlocked(bool action) {blocked = action;};
 	void kill() {alive = false;};
 	bool isAlive() const {return alive;};

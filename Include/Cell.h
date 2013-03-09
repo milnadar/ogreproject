@@ -19,7 +19,7 @@ public:
 	Cell* getParent() const {return parent;};
 	void setCellEntity(Ogre::Entity *entity) {cellEntity = entity;};
 	bool isWalkable();
-	const Ogre::Entity* getEntity() const {return cellEntity;};
+	Ogre::Entity* getEntity() const {return cellEntity;};
 	const Ogre::String& getName() const {return idname;};
 	int getF() const {return f;};
 	int getG() const {return g;};
@@ -31,6 +31,8 @@ public:
 	void setUnit(GameUnit*);
 	void removeUnitFromCell();
 	void clear();
+	void showCellAsAvailable(bool available);
+	bool isShowedAsAvailable() {return showedAsAvailable;};
 	~Cell();
 private:
 	Ogre::Entity *cellEntity;
@@ -42,6 +44,7 @@ private:
 	int h;
 	int state;
 	bool closed;
+	bool showedAsAvailable;
 	Ogre::String idname;
 	Cell* parent;
 	//Unit *unit;

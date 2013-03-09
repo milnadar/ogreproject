@@ -16,6 +16,7 @@ This source file is part of the
 */
 #include "TutorialApplication.h"
 #include "UnitManager.h"
+#include <cstdlib>
 
 //-------------------------------------------------------------------------------------
 TutorialApplication::TutorialApplication(void)
@@ -25,6 +26,7 @@ TutorialApplication::TutorialApplication(void)
 	attacker = NULL;
 	target = NULL;
 	gameConsole = NULL;
+	interfaceBlocked = false;
 	gameState = GameState::PlayState;
 	currentPlayer = Players::player1;
 }
@@ -126,6 +128,33 @@ void TutorialApplication::changeGameState()
 	currentUnit = NULL;
 }
 
+void TutorialApplication::selectUnit(GameUnit *unit)
+{
+	if(unit != NULL)
+	{
+		currentUnit = unit;
+		currentUnit->getNode()->showBoundingBox(true);
+		consoleOutput("Selected unit " + currentUnit->getUnitName());
+		field->showavailableCellsToMove(currentUnit);
+	}
+}
+
+void TutorialApplication::deselectCurrentUnit()
+{
+	if(currentUnit != NULL)
+	{
+		currentUnit->getNode()->showBoundingBox(false);
+		currentUnit = NULL;
+	}
+}
+
+void TutorialApplication::endTurn()
+{
+	deselectCurrentUnit();
+	attacker = NULL;
+	target = NULL;
+}
+
 bool TutorialApplication::frameRenderingQueued(const Ogre::FrameEvent &evt)
 {
 	UnitManager::getSingletonPtr()->addTime(evt.timeSinceLastFrame);
@@ -153,6 +182,7 @@ bool TutorialApplication::frameRenderingQueued(const Ogre::FrameEvent &evt)
 			{
 				currentUnit->stopAnimation();
 				field->setUnitOnCell(finalCell, currentUnit);
+				field->showavailableCellsToMove(currentUnit);
 				finalCell = NULL;
 			}
 			else
@@ -267,7 +297,7 @@ bool TutorialApplication::mousePressedInEditState(const OIS::MouseEvent &arg,OIS
 			{
 				if (itr->movable && itr->movable->getName().find("unit") == 0)
 				{
-					currentUnit = Ogre::any_cast<GameUnit*>(itr->movable->getUserAny());
+					selectUnit(Ogre::any_cast<GameUnit*>(itr->movable->getUserAny()));
 					break;
 				}
 			}
@@ -303,8 +333,11 @@ bool TutorialApplication::mousePressedInPlayState(const OIS::MouseEvent &arg,OIS
 				}
 				else if(itr->movable && itr->movable->getName().find("unit") == 0)
 				{
-					attacker = currentUnit;
-					target = Ogre::any_cast<GameUnit*>(itr->movable->getUserAny());
+					if(currentUnit->canShoot())
+					{
+						attacker = currentUnit;
+						target = Ogre::any_cast<GameUnit*>(itr->movable->getUserAny());
+					}
 					break;
 				}
 			}
@@ -312,9 +345,7 @@ bool TutorialApplication::mousePressedInPlayState(const OIS::MouseEvent &arg,OIS
 			{
 				if (itr->movable && itr->movable->getName().find("unit") == 0)
 				{
-					currentUnit = Ogre::any_cast<GameUnit*>(itr->movable->getUserAny());
-					itr->movable->getParentSceneNode()->showBoundingBox(true);
-					consoleOutput("Selected unit " + currentUnit->getUnitName());
+					selectUnit(Ogre::any_cast<GameUnit*>(itr->movable->getUserAny()));
 					break;
 				}
 			}
@@ -361,6 +392,7 @@ void TutorialApplication::buttonClicked(MyGUI::Widget* _widget)
 				currentPlayer = Players::player1;
 			updateUnitListForCurrentPlayer();
 			UnitManager::getSingletonPtr()->resetUnitsStats();
+			endTurn();
 		}
 	}
 }
@@ -387,7 +419,7 @@ bool TutorialApplication::moveUnitToCell(GameUnit *unit, Cell* cell)
 	std::vector<Cell*> path;
 	std::vector<Cell*>::iterator pathItr;
 	path = field->findPath(unit->getCell(), cell);
-	if(path.size() > unit->stepsLeftToMove())
+	if(path.size() > unit->stepsLeftToMove() || path.empty())
 		return false;
 	finalCell = cell;
 	for(pathItr = path.begin(); pathItr != path.end(); pathItr++)
@@ -397,11 +429,28 @@ bool TutorialApplication::moveUnitToCell(GameUnit *unit, Cell* cell)
 	return true;
 }
 
+bool TutorialApplication::calculateRangeAttack(const UnitStats &attacker, const UnitStats &target)
+{
+	int shot = rand() % attacker.attackPower + 1;
+	if(shot > target.armor)
+	{
+		Ogre::String log("Hit (" + Ogre::StringConverter::toString(shot) + " > " + Ogre::StringConverter::toString(target.armor) + ')');
+		consoleOutput(log);
+		return true;
+	}
+	else
+	{
+		Ogre::String log("Miss (" + Ogre::StringConverter::toString(shot) + " < " + Ogre::StringConverter::toString(target.armor)+ ')');
+		consoleOutput(log);
+	}
+	return false;
+}
+
 void TutorialApplication::attackScenario()
 {
 	if(attacker != NULL && target != NULL)
 	{
-		if(attacker->canShoot())
+		if(attacker->hasMoreShots())
 		{
 			if(!attacker->isBlocked())
 			{

@@ -1,9 +1,9 @@
 #include "Cell.h"
 
 Cell::Cell(int iPos, int jPos, Ogre::String idName) : ipos(iPos), jpos(jPos), idname(idName),
-	f(0), g(0), h(0), state(0), parent(NULL), cellEntity(NULL), unit(NULL), closed(false)
+	f(0), g(0), h(0), state(0), parent(NULL), cellEntity(NULL), unit(NULL), closed(false), showedAsAvailable(false)
 {
-	//
+
 }
 
 bool Cell::isWalkable()
@@ -32,4 +32,18 @@ void Cell::removeUnitFromCell()
 {
 	//this->unit = NULL;
 	state = 0;
+}
+
+void Cell::showCellAsAvailable(bool available)
+{
+	if(available)
+	{
+		cellEntity->setMaterialName("selected_cell");
+		showedAsAvailable = true;
+	}
+	else
+	{
+		cellEntity->setMaterialName("02-Default");
+		showedAsAvailable = false;
+	}
 }

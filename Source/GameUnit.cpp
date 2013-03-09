@@ -9,6 +9,11 @@ UnitStats::UnitStats(int _speed, int _armor, int _mele, int _numberAttacks, int 
 GameUnit::GameUnit(int id, int player, Ogre::SceneManager *manager) : sceneManager(manager), unitDirection(Ogre::Vector3::ZERO),
 	unitCell(NULL), unitNode(NULL), unitEntity(NULL), owner(player), animationState(NULL)
 {
+	unitStats.armor = 5;
+	unitStats.attackPower = 6;
+	unitStats.meleAttack = 3;
+	unitStats.movementSpeed = 4;
+	unitStats.numberAttacks = 3;
 	movementSpeed = 4;
 	stepsLeft = movementSpeed;
 	armor = 5;
@@ -70,6 +75,7 @@ void GameUnit::moveOneStep()
 
 void GameUnit::makeOneShot()
 {
+	canPerformRangeAttack = false;
 	if(--numberAttacksLeft < 0)
 		numberAttacksLeft = 0;
 }

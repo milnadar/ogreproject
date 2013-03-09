@@ -25,3 +25,19 @@ material 02-Default
 	}
 
 }
+
+material selected_cell
+{
+	technique
+	{
+		pass
+		{
+			texture_unit
+			{
+				texture cell.png
+			}
+		}
+
+	}
+
+}

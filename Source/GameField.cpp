@@ -1,7 +1,7 @@
 #include "GameField.h"
 #include "OgreMeshManager.h"
 
-GameField::GameField(Ogre::SceneManager* mgr) : sceneMgr(mgr)
+GameField::GameField(Ogre::SceneManager* mgr) : sceneMgr(mgr), lastCell(NULL)
 {
 	fieldWidth = 10;
 	fieldHeight = 20;
@@ -37,9 +37,9 @@ void GameField::setupField()
 			field[i][j] = cell;
 			Ogre::Vector3 pos;
 			if(i % 2 != 0)
-				pos = Ogre::Vector3(i == 0 ? i * 1.5 : i * 2.2, 0, (j * 2.6) + 1.3);
+				pos = Ogre::Vector3(i == 0 ? i * 3 : i * 4.4, 0, (j * 5.2) + 2.6);
 			else
-				pos = Ogre::Vector3(i == 0 ? i * 1.5 : i * 2.2, 0, j * 2.6);
+				pos = Ogre::Vector3(i == 0 ? i * 3 : i * 4.4, 0, j * 5.2);
 			ent = sceneMgr->createEntity(name, "cell.mesh");
 			if(i % 2 != 0 && j == fieldHeight - 1)
 			{
@@ -48,17 +48,18 @@ void GameField::setupField()
 			}
 			node = sceneMgr->getRootSceneNode()->createChildSceneNode(name + "node", pos);
 			node->attachObject(ent);
+			node->setScale(2,2,2);
 			cell->setCellEntity(ent);
 			ent->setUserAny(Ogre::Any(cell));
 		}
-		Ogre::Plane plane(Ogre::Vector3::UNIT_Y, 0);
+		/*Ogre::Plane plane(Ogre::Vector3::UNIT_Y, 0);
 		Ogre::MeshManager::getSingleton().createPlane("ground", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, plane, fieldHeight * 5, fieldWidth * 6, 20, 20, true, 1, 5, 5, Ogre::Vector3::UNIT_Z);
 		Ogre::Entity* entGround = sceneMgr->createEntity("GroundEntity", "ground");
 		node = sceneMgr->getRootSceneNode()->createChildSceneNode();
 		node->attachObject(entGround);
 		entGround->setMaterialName("field");
 		entGround->setCastShadows(false);
-		node->setPosition(fieldHeight, -1, fieldWidth);
+		node->setPosition(fieldHeight, -1, fieldWidth);*/
 }
 
 bool GameField::setUnitOnCell(Cell *cell, GameUnit* unit)
@@ -94,6 +95,58 @@ bool GameField::setUnitOnCell(int indexi, int indexj, GameUnit* unit)
 		}
 	}
 	return false;
+}
+
+void GameField::showavailableCellsToMove(GameUnit *unit)
+{
+	if(unit != NULL)
+	{
+		if(lastCell != NULL)
+			setAvailableCellsInRadius(lastCell, lastRadius, false);
+		Cell *unitCell = unit->getCell();
+		lastCell = unitCell;
+		lastRadius = unit->stepsLeftToMove();
+		setAvailableCellsInRadius(unitCell, unit->stepsLeftToMove(), true);
+	}
+}
+
+void GameField::setAvailableCellsInRadius(Cell *cell, int radius, bool available)
+{
+	if(--radius >= 0)
+		if(cell != NULL)
+		{
+			Cell* neighbour = NULL;
+			int shiftForXr;
+			int shiftForXl;
+			for(int i = 0; i < 6; i ++)
+			{
+				if (cell->getI() % 2 == 0)
+				{
+					shiftForXr = 0;
+					shiftForXl = 1;
+				}
+				else
+				{
+					shiftForXr = 1;
+					shiftForXl = 0;
+				}
+				switch(i)
+				{
+				case 0 : {neighbour = getCellByIndex(cell->getI() + 1, cell->getJ() - shiftForXl); break;};
+				case 1 : {neighbour = getCellByIndex(cell->getI() + 1, cell->getJ() + shiftForXr); break;};
+				case 2 : {neighbour = getCellByIndex(cell->getI(), cell->getJ() + 1); break;};
+				case 3 : {neighbour = getCellByIndex(cell->getI() - 1, cell->getJ() + shiftForXr); break;};
+				case 4 : {neighbour = getCellByIndex(cell->getI() - 1, cell->getJ() - shiftForXl); break;};
+				case 5 : {neighbour = getCellByIndex(cell->getI(), cell->getJ() - 1); break;};
+				}
+				if(neighbour != NULL)
+				{
+					//if(!neighbour->isShowedAsAvailable())
+						neighbour->showCellAsAvailable(available);
+					setAvailableCellsInRadius(neighbour, radius, available);
+				}
+			}
+		}
 }
 
 std::vector<Cell*> GameField::findPath(const Cell* _start, const Cell* _finish)
