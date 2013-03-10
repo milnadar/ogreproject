@@ -3,7 +3,7 @@
 
 GameField::GameField(Ogre::SceneManager* mgr) : sceneMgr(mgr), lastCell(NULL)
 {
-	fieldWidth = 10;
+	fieldWidth = 20;
 	fieldHeight = 20;
 	std::vector<Cell*> tmp;
 	for(int i = 0; i < fieldHeight; i++)
