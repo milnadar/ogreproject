@@ -54,11 +54,12 @@ protected:
 	void deselectCurrentUnit();
 	void endTurn();
 	void attackScenario();
-	bool calculateRangeAttack(const UnitStats& attacker, const UnitStats& target);
+	void performRangeAttack(GameUnit* attacker, GameUnit* target);
 private:
 	enum Players {player1 = 1, player2};
 	bool moveUnitToCell(GameUnit*, Cell*);
 	bool nextLocation();
+	bool calculateRangeAttack(const UnitStats& attacker, const UnitStats& target);
 	Ogre::RaySceneQuery *mRaySceneQuery;// The ray scene query pointer
     bool mLmouseDown, mRmouseDown;		// True if the mouse buttons are down
     float mRotateSpeed;

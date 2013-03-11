@@ -21,7 +21,7 @@ public:
 	bool setUnitOnCell(int, int, GameUnit*);
 	bool setUnitOnCell(Cell*, GameUnit*);
 	//bool setUnitOnCell(const Cell*, GameUnit*); ---?
-	void showavailableCellsToMove(GameUnit *unit);
+	void showavailableCellsToMove(GameUnit *unit, bool show);
 	void setAvailableCellsInRadius(Cell *cell, int radius, bool available);
 private:
 	bool validateIndexes(int, int);
