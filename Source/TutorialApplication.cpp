@@ -135,7 +135,7 @@ void TutorialApplication::selectUnit(GameUnit *unit)
 		currentUnit = unit;
 		currentUnit->getNode()->showBoundingBox(true);
 		consoleOutput("Selected unit " + currentUnit->getUnitName());
-		field->showavailableCellsToMove(currentUnit);
+		field->showavailableCellsToMove(currentUnit, true);
 	}
 }
 
@@ -144,6 +144,7 @@ void TutorialApplication::deselectCurrentUnit()
 	if(currentUnit != NULL)
 	{
 		currentUnit->getNode()->showBoundingBox(false);
+		field->showavailableCellsToMove(currentUnit, false);
 		currentUnit = NULL;
 	}
 }
@@ -182,7 +183,7 @@ bool TutorialApplication::frameRenderingQueued(const Ogre::FrameEvent &evt)
 			{
 				currentUnit->stopAnimation();
 				field->setUnitOnCell(finalCell, currentUnit);
-				field->showavailableCellsToMove(currentUnit);
+				field->showavailableCellsToMove(currentUnit, true);
 				finalCell = NULL;
 			}
 			else
@@ -260,9 +261,7 @@ bool TutorialApplication::mousePressed(const OIS::MouseEvent &arg, OIS::MouseBut
 	{
 		mRmouseDown = true;
 		MyGUI::PointerManager::getInstance().setVisible(false);
-		if(currentUnit != NULL)
-			currentUnit->getNode()->showBoundingBox(false);
-		currentUnit = NULL;
+		deselectCurrentUnit();
 	}
 	if(gameState == GameState::EditState)
 		result = mousePressedInEditState(arg, id);
@@ -335,8 +334,8 @@ bool TutorialApplication::mousePressedInPlayState(const OIS::MouseEvent &arg,OIS
 				{
 					if(currentUnit->canShoot())
 					{
-						attacker = currentUnit;
-						target = Ogre::any_cast<GameUnit*>(itr->movable->getUserAny());
+						GameUnit *targetUnit = Ogre::any_cast<GameUnit*>(itr->movable->getUserAny());
+						performRangeAttack(currentUnit, targetUnit);
 					}
 					break;
 				}
@@ -427,6 +426,16 @@ bool TutorialApplication::moveUnitToCell(GameUnit *unit, Cell* cell)
 	}
 	consoleOutput("Unit " + unit->getUnitName() + " moved to cell " + cell->getName());
 	return true;
+}
+
+void TutorialApplication::performRangeAttack(GameUnit* attacker, GameUnit *target)
+{
+	if(attacker != target)
+	{
+		//TODO calculate distance here
+		this->attacker = attacker;
+		this->target = target;
+	}
 }
 
 bool TutorialApplication::calculateRangeAttack(const UnitStats &attacker, const UnitStats &target)
