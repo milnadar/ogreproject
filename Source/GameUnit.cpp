@@ -14,6 +14,8 @@ GameUnit::GameUnit(int id, int player, Ogre::SceneManager *manager) : sceneManag
 	unitStats.meleAttack = 3;
 	unitStats.movementSpeed = 4;
 	unitStats.numberAttacks = 3;
+	unitStats.attackDistance = 6;
+	unitStats.distanceModifier = 0;
 	movementSpeed = 4;
 	stepsLeft = movementSpeed;
 	armor = 5;
@@ -47,7 +49,7 @@ void GameUnit::SetPosition(Ogre::Vector3 &position)
 		unitNode->setPosition(position);
 }
 
-Ogre::Vector3 GameUnit::getPosition()
+Ogre::Vector3 const GameUnit::getPosition()
 {
 	Ogre::Vector3 position;
 	if(unitNode != NULL)

@@ -104,7 +104,7 @@ void GameField::showavailableCellsToMove(GameUnit *unit, bool show)
 		//if unit were moved earlier, clear the zone where it was
 		if(lastCell != NULL)
 		{
-			lastCell->showCellAsAvailable(!show);
+			//lastCell->showCellAsAvailable(!show);
 			setAvailableCellsInRadius(lastCell, lastRadius, !show);
 		}
 		//paint new zone for unit
@@ -113,7 +113,7 @@ void GameField::showavailableCellsToMove(GameUnit *unit, bool show)
 		lastCell = unitCell;
 		lastRadius = unit->stepsLeftToMove();
 		//display current unit's cell as walkable also
-		unitCell->showCellAsAvailable(show);
+		//unitCell->showCellAsAvailable(show);
 		setAvailableCellsInRadius(unitCell, unit->stepsLeftToMove(), show);
 	}
 }
@@ -152,7 +152,7 @@ void GameField::setAvailableCellsInRadius(Cell *cell, int radius, bool available
 				if(neighbour != NULL)
 				{
 					//if cell wasn't yet painted as walkable/!walkable, and cell cen be moved to
-					if(neighbour->isShowedAsAvailable() != available && neighbour->isWalkable())
+					if(neighbour->isShowedAsAvailable() != available && neighbour->isWalkable() && neighbour != lastCell)
 						neighbour->showCellAsAvailable(available);
 					//for every neighbour of the cell, check if it is in radius, and paint if needed
 					setAvailableCellsInRadius(neighbour, radius, available);

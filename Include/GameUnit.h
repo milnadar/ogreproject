@@ -15,6 +15,8 @@ struct UnitStats{
 	int meleAttack;
 	int numberAttacks;
 	int attackPower;
+	int attackDistance;
+	int distanceModifier;
 };
 
 class GameUnit
@@ -28,7 +30,7 @@ public:
 	Ogre::String getUnitName() const {return unitName;};
 	int getOwner() const {return owner;};
 	void SetPosition(Ogre::Vector3&);
-	Ogre::Vector3 getPosition();
+	Ogre::Vector3 const getPosition();
 	bool TranslateUnit(Ogre::Vector3&);
 	void moveOneStep();
 	void makeOneShot();

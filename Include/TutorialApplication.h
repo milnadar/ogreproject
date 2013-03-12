@@ -29,6 +29,10 @@ public:
     virtual ~TutorialApplication(void);
 
 protected:
+	enum QueryMask {
+		PLAYER_1 = 1 << 0,
+		PLAYER_2 = 1 << 1
+	};
 	enum GameState {PlayState = 0, EditState};
     virtual void createScene(void);
 	virtual void createFrameListener(void);
@@ -59,7 +63,14 @@ private:
 	enum Players {player1 = 1, player2};
 	bool moveUnitToCell(GameUnit*, Cell*);
 	bool nextLocation();
+	//return whether unit hit the target
 	bool calculateRangeAttack(const UnitStats& attacker, const UnitStats& target);
+	//returns units distance check result
+	int calculateDistance(int distance, int modifier);
+	//returns distance between two units
+	int getDistance(const GameUnit* attacker, const GameUnit* target);
+	//returns distance between two points
+	int getDistance(const Ogre::Vector3 &position1, const Ogre::Vector3 &position2);
 	Ogre::RaySceneQuery *mRaySceneQuery;// The ray scene query pointer
     bool mLmouseDown, mRmouseDown;		// True if the mouse buttons are down
     float mRotateSpeed;

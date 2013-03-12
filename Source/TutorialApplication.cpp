@@ -133,7 +133,7 @@ void TutorialApplication::selectUnit(GameUnit *unit)
 	if(unit != NULL)
 	{
 		currentUnit = unit;
-		currentUnit->getNode()->showBoundingBox(true);
+		//currentUnit->getNode()->showBoundingBox(true);
 		consoleOutput("Selected unit " + currentUnit->getUnitName());
 		field->showavailableCellsToMove(currentUnit, true);
 	}
@@ -324,19 +324,29 @@ bool TutorialApplication::mousePressedInPlayState(const OIS::MouseEvent &arg,OIS
 		{
 			if(currentUnit != NULL)
 			{
-				if (itr->movable && itr->movable->getName().find("cell") == 0)
+				if(itr->movable && itr->movable->getName().find("unit") == 0)
+				{
+					GameUnit* pointedUnit = Ogre::any_cast<GameUnit*>(itr->movable->getUserAny());
+					if(pointedUnit->getOwner() != currentPlayer)
+					{
+						if(currentUnit->canShoot())
+						{
+							GameUnit *targetUnit = Ogre::any_cast<GameUnit*>(itr->movable->getUserAny());
+							performRangeAttack(currentUnit, targetUnit);
+						}
+					}
+					else
+					{
+						//deselectCurrentUnit();
+						currentUnit = pointedUnit;
+						selectUnit(currentUnit);
+					}
+					break;
+				}
+				else if (itr->movable && itr->movable->getName().find("cell") == 0)
 				{
 					Cell* cell = Ogre::any_cast<Cell*>(itr->movable->getUserAny());
 					moveUnitToCell(currentUnit, cell);
-					break;
-				}
-				else if(itr->movable && itr->movable->getName().find("unit") == 0)
-				{
-					if(currentUnit->canShoot())
-					{
-						GameUnit *targetUnit = Ogre::any_cast<GameUnit*>(itr->movable->getUserAny());
-						performRangeAttack(currentUnit, targetUnit);
-					}
 					break;
 				}
 			}
@@ -386,9 +396,15 @@ void TutorialApplication::buttonClicked(MyGUI::Widget* _widget)
 		else if(_widget->getName() == "changePlayerButton")
 		{
 			if(currentPlayer == Players::player1)
+			{
 				currentPlayer = Players::player2;
+				//mRaySceneQuery->setQueryMask(QueryMask::PLAYER_2);
+			}
 			else
+			{
 				currentPlayer = Players::player1;
+				//mRaySceneQuery->setQueryMask(QueryMask::PLAYER_1);
+			}
 			updateUnitListForCurrentPlayer();
 			UnitManager::getSingletonPtr()->resetUnitsStats();
 			endTurn();
@@ -432,7 +448,13 @@ void TutorialApplication::performRangeAttack(GameUnit* attacker, GameUnit *targe
 {
 	if(attacker != target)
 	{
-		//TODO calculate distance here
+		//calculate distance between two units
+		int distance = getDistance(attacker->getPosition(), target->getPosition());
+		consoleOutput("distance = " + Ogre::StringConverter::toString(distance));
+		//calculate distance check for attacker unit
+		int distanceResult = calculateDistance(attacker->getUnitStats().attackDistance, attacker->getUnitStats().distanceModifier);
+		if(distanceResult < distance)
+			return;
 		this->attacker = attacker;
 		this->target = target;
 	}
@@ -453,6 +475,29 @@ bool TutorialApplication::calculateRangeAttack(const UnitStats &attacker, const 
 		consoleOutput(log);
 	}
 	return false;
+}
+
+int TutorialApplication::calculateDistance(int distance, int modifier)
+{
+	int value = rand() % distance;
+	value += modifier;
+	consoleOutput("Distance check result: " + Ogre::StringConverter::toString(value) + " + " + Ogre::StringConverter::toString(modifier) +
+		+ " = " + Ogre::StringConverter::toString(value + modifier));
+	return value;
+}
+
+int TutorialApplication::getDistance(const GameUnit *attacker, const GameUnit *target)
+{
+	//Ogre::Vector3 position1 = _attacker->getPosition();
+	//Ogre::Vector3 position2 = _target->getPosition();
+	return 0;
+}
+
+int TutorialApplication::getDistance(const Ogre::Vector3 &position1, const Ogre::Vector3 &position2)
+{
+	Ogre::Vector3 vector = position2 - position1;
+	int distance = std::floor((vector.normalise() / 5) + 0.5);
+	return distance;
 }
 
 void TutorialApplication::attackScenario()
