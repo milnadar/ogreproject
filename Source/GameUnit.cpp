@@ -33,7 +33,7 @@ GameUnit::GameUnit(int id, int player, Ogre::SceneManager *manager) : sceneManag
 	{
 		unitEntity = sceneManager->createEntity(unitName, "robot.mesh");
 		unitNode = sceneManager->getRootSceneNode()->createChildSceneNode(unitName + "node");
-		unitNode->setScale(0.07, 0.07, 0.07);
+		unitNode->setScale(0.05, 0.05, 0.05);
 		unitNode->attachObject(unitEntity);
 		unitEntity->setUserAny(Ogre::Any(this));
 		if(player == 2)
@@ -43,7 +43,7 @@ GameUnit::GameUnit(int id, int player, Ogre::SceneManager *manager) : sceneManag
 	}
 }
 
-void GameUnit::SetPosition(Ogre::Vector3 &position)
+void GameUnit::SetPosition(Ogre::Vector3 position)
 {
 	if(unitNode != NULL)
 		unitNode->setPosition(position);

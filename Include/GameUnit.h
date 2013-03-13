@@ -29,7 +29,7 @@ public:
 	void setUnitCell(Cell* newCell) {unitCell = newCell;};
 	Ogre::String getUnitName() const {return unitName;};
 	int getOwner() const {return owner;};
-	void SetPosition(Ogre::Vector3&);
+	void SetPosition(Ogre::Vector3);
 	Ogre::Vector3 const getPosition();
 	bool TranslateUnit(Ogre::Vector3&);
 	void moveOneStep();

@@ -101,19 +101,18 @@ void GameField::showavailableCellsToMove(GameUnit *unit, bool show)
 {
 	if(unit != NULL)
 	{
+		Cell *unitCell = unit->getCell();
 		//if unit were moved earlier, clear the zone where it was
-		if(lastCell != NULL)
+		if(lastCell != NULL && lastCell != unitCell)
 		{
-			//lastCell->showCellAsAvailable(!show);
+			unitCell->showCellAsAvailable(!show);
+			lastCell->showCellAsAvailable(!show);
 			setAvailableCellsInRadius(lastCell, lastRadius, !show);
 		}
 		//paint new zone for unit
-		Cell *unitCell = unit->getCell();
 		//and remember the cell unit was in, and radius in which cells will be painted as walkable
 		lastCell = unitCell;
 		lastRadius = unit->stepsLeftToMove();
-		//display current unit's cell as walkable also
-		//unitCell->showCellAsAvailable(show);
 		setAvailableCellsInRadius(unitCell, unit->stepsLeftToMove(), show);
 	}
 }
@@ -226,9 +225,10 @@ std::vector<Cell*> GameField::findPath(const Cell* _start, const Cell* _finish)
 			}//switch
 			if (child == NULL)
 				continue;
-			//if (child->isWalkable() && !listContains (closed, child))
-			if (child->isWalkable() && !child->isClosed())
+			current->setCheckedForRadius(true);
+			if (child->isWalkable() && !child->isClosed() && cellsInRadiusAreWalkable(child, 0))
 			{
+				current->setCheckedForRadius(false);
 				if (!listContains(opened, child))
 				{
 					opened.push_back(child);
@@ -280,6 +280,50 @@ Cell* GameField::getCellByIndex(int index1, int index2)
 int GameField::heuristic(Cell* start, Cell* finish)
 {
 	return (abs(finish->getI() - start->getI()) + abs(finish->getJ() - start->getJ())) * 10;
+}
+
+bool GameField::cellsInRadiusAreWalkable(const Cell* parent, int radius)
+{
+	//if(!--radius > 0)
+		//return true;
+	Cell* child = NULL;
+	bool result = true;
+	int shiftForXr;
+	int shiftForXl;
+ 	for (int index = 0; index < 6; index++)
+	{
+		if (parent->getI() % 2 == 0)
+		{
+			shiftForXr = 0;
+			shiftForXl = 1;
+		}
+		else
+		{
+			shiftForXr = 1;
+			shiftForXl = 0;
+		}
+		switch(index)
+		{
+		case 0 : 
+			{child = getCellByIndex(parent->getI() + 1, parent->getJ() - shiftForXl); break;}
+		case 1 : 
+			{child = getCellByIndex(parent->getI() + 1, parent->getJ() + shiftForXr); break;}
+		case 2 : 
+			{child = getCellByIndex(parent->getI(), parent->getJ() + 1); break;}
+		case 3 : 
+			{child = getCellByIndex(parent->getI() - 1, parent->getJ() + shiftForXr); break;}
+		case 4 : 
+			{child = getCellByIndex(parent->getI() - 1, parent->getJ() - shiftForXl); break;}
+		case 5 : 
+			{child = getCellByIndex(parent->getI(), parent->getJ() - 1); break;}
+		}//switch
+		if(child != NULL && child != parent)
+		{
+			if(!child->isWalkable() && !child->isCheckedForRadius())
+				result = false;
+		}
+	}
+	return result;
 }
 
 bool GameField::validateIndexes(int indexi, int indexj)

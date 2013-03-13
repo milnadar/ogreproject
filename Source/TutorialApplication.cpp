@@ -101,15 +101,17 @@ void TutorialApplication::setupScene()
 	UnitManager *unitManager = new UnitManager(mSceneMgr);
 	field = new GameField(mSceneMgr);
 	field->setupField();
-	currentUnit = UnitManager::getSingletonPtr()->createUnit(currentPlayer);
-	field->setUnitOnCell(field->getCellByIndex(0, 0), currentUnit);
-	UnitManager::getSingletonPtr()->createSquad(currentPlayer);
+	for(int i = 0; i < 5; i ++)
+	{
+		currentUnit = UnitManager::getSingletonPtr()->createUnit(currentPlayer);
+		field->setUnitOnCell(field->getCellByIndex(i, i + 2), currentUnit);
+	}
 	updateUnitListForCurrentPlayer();
-	//Ogre::Entity *entity = mSceneMgr->createEntity("tube", "tube.mesh");
-	//Ogre::SceneNode *node = mSceneMgr->getRootSceneNode()->createChildSceneNode("nodetube");
-	//node->attachObject(entity);
-	//node->setScale(2,2,2);
-	//node->setPosition(25, 10, 50);
+	Ogre::Entity *entity = mSceneMgr->createEntity("tube", "car.mesh");
+	Ogre::SceneNode *node = mSceneMgr->getRootSceneNode()->createChildSceneNode("nodetube");
+	node->attachObject(entity);
+	node->setScale(50,50,50);
+	node->setPosition(20, 0, 51);
 }
 
 void TutorialApplication::changeGameState()

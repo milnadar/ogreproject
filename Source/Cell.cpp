@@ -1,7 +1,8 @@
 #include "Cell.h"
 
 Cell::Cell(int iPos, int jPos, Ogre::String idName) : ipos(iPos), jpos(jPos), idname(idName),
-	f(0), g(0), h(0), state(0), parent(NULL), cellEntity(NULL), unit(NULL), closed(false), showedAsAvailable(false)
+	f(0), g(0), h(0), state(0), parent(NULL), cellEntity(NULL), unit(NULL), closed(false), showedAsAvailable(false),
+	checkedForRadius(false)
 {
 
 }
@@ -20,11 +21,15 @@ void Cell::clear()
 	h = 0;
 	parent = NULL;
 	closed = false;
+	checkedForRadius = false;
 }
 
 void Cell::setUnit(GameUnit *unit)
 {
+	//add check if there are enemy unit near this cell
 	//this->unit = unit;
+	Ogre::Vector3 pos = cellEntity->getParentSceneNode()->getPosition();
+	unit->SetPosition(pos);
 	state = 3; //tmp value
 }
 

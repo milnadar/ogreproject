@@ -1,0 +1,26 @@
+material ForkLift
+{
+	technique
+	{
+		pass
+		{
+			ambient 0.64 0.64 0.64 1
+			diffuse 0.64 0.64 0.64 1
+			specular 0 0 0 1 1			scene_blend one one_minus_src_alpha
+
+			texture_unit
+			{
+				texture ForkLift_D.tga
+			}
+
+			texture_unit
+			{
+				colour_op_ex blend_manual src_manual src_current 0 1 1 1
+				colour_op_multipass_fallback dest_colour zero
+				alpha_op_ex source1 src_manual src_current 0
+			}
+		}
+
+	}
+
+}

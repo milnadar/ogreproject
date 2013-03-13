@@ -27,9 +27,13 @@ public:
 	int getI() const {return ipos;};
 	int getJ() const {return jpos;};
 	void setClosed(bool value) {closed = value;};
-	bool isClosed() {return closed;};
+	bool isClosed() const {return closed;};
+	bool isCheckedForRadius() const {return checkedForRadius;};
+	void setCheckedForRadius(bool checked) {checkedForRadius = checked;};
 	void setUnit(GameUnit*);
 	void removeUnitFromCell();
+	void setVehicle(GameUnit*){};
+	void removeVehicleFromCell(){};
 	void clear();
 	void showCellAsAvailable(bool available);
 	bool isShowedAsAvailable() {return showedAsAvailable;};
@@ -44,6 +48,7 @@ private:
 	int h;
 	int state;
 	bool closed;
+	bool checkedForRadius;
 	bool showedAsAvailable;
 	Ogre::String idname;
 	Cell* parent;

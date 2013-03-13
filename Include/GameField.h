@@ -24,6 +24,7 @@ public:
 	void showavailableCellsToMove(GameUnit *unit, bool show);
 	void setAvailableCellsInRadius(Cell *cell, int radius, bool available);
 private:
+	bool cellsInRadiusAreWalkable(const Cell* parent, int radius);
 	bool validateIndexes(int, int);
 	Cell *lastCell;
 	int lastRadius;
