@@ -19,7 +19,8 @@ GameUnit* UnitManager::createUnit(int player)
 	GameUnit *unit = NULL;
 	if(sceneManager != NULL)
 	{
-		unit = new GameUnit(unitCounter++, player, sceneManager);
+		TrooperStats stats(6, 3, 3, 3, 6, 4, 1);
+		unit = new Trooper(unitCounter++, player, stats, sceneManager);
 		units.push_back(unit);
 	}
 	return unit;

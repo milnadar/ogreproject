@@ -64,7 +64,7 @@ private:
 	bool moveUnitToCell(GameUnit*, Cell*);
 	bool nextLocation();
 	//return whether unit hit the target
-	bool calculateRangeAttack(const UnitStats& attacker, const UnitStats& target);
+	bool calculateRangeAttack(const UnitStats *attacker, const UnitStats *target);
 	//returns units distance check result
 	int calculateDistance(int distance, int modifier);
 	//returns distance between two units

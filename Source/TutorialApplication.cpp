@@ -296,9 +296,9 @@ bool TutorialApplication::mousePressedInEditState(const OIS::MouseEvent &arg,OIS
 			}
 			else
 			{
-				if (itr->movable && itr->movable->getName().find("unit") == 0)
+				if (itr->movable && itr->movable->getName().find("trooper") == 0)
 				{
-					selectUnit(Ogre::any_cast<GameUnit*>(itr->movable->getUserAny()));
+					selectUnit(Ogre::any_cast<Trooper*>(itr->movable->getUserAny()));
 					break;
 				}
 			}
@@ -326,14 +326,14 @@ bool TutorialApplication::mousePressedInPlayState(const OIS::MouseEvent &arg,OIS
 		{
 			if(currentUnit != NULL)
 			{
-				if(itr->movable && itr->movable->getName().find("unit") == 0)
+				if(itr->movable && itr->movable->getName().find("trooper") == 0)
 				{
-					GameUnit* pointedUnit = Ogre::any_cast<GameUnit*>(itr->movable->getUserAny());
+					GameUnit* pointedUnit = Ogre::any_cast<Trooper*>(itr->movable->getUserAny());
 					if(pointedUnit->getOwner() != currentPlayer)
 					{
 						if(currentUnit->canShoot())
 						{
-							GameUnit *targetUnit = Ogre::any_cast<GameUnit*>(itr->movable->getUserAny());
+							GameUnit *targetUnit = Ogre::any_cast<Trooper*>(itr->movable->getUserAny());
 							performRangeAttack(currentUnit, targetUnit);
 						}
 					}
@@ -354,9 +354,9 @@ bool TutorialApplication::mousePressedInPlayState(const OIS::MouseEvent &arg,OIS
 			}
 			else
 			{
-				if (itr->movable && itr->movable->getName().find("unit") == 0)
+				if (itr->movable && itr->movable->getName().find("trooper") == 0)
 				{
-					selectUnit(Ogre::any_cast<GameUnit*>(itr->movable->getUserAny()));
+					selectUnit(Ogre::any_cast<Trooper*>(itr->movable->getUserAny()));
 					break;
 				}
 			}
@@ -454,7 +454,7 @@ void TutorialApplication::performRangeAttack(GameUnit* attacker, GameUnit *targe
 		int distance = getDistance(attacker->getPosition(), target->getPosition());
 		consoleOutput("distance = " + Ogre::StringConverter::toString(distance));
 		//calculate distance check for attacker unit
-		int distanceResult = calculateDistance(attacker->getUnitStats().attackDistance, attacker->getUnitStats().distanceModifier);
+		int distanceResult = calculateDistance(attacker->getUnitStats()->attackDistance, attacker->getUnitStats()->distanceModifier);
 		if(distanceResult < distance)
 			return;
 		this->attacker = attacker;
@@ -462,18 +462,18 @@ void TutorialApplication::performRangeAttack(GameUnit* attacker, GameUnit *targe
 	}
 }
 
-bool TutorialApplication::calculateRangeAttack(const UnitStats &attacker, const UnitStats &target)
+bool TutorialApplication::calculateRangeAttack(const UnitStats *attacker, const UnitStats *target)
 {
-	int shot = rand() % attacker.attackPower + 1;
-	if(shot > target.armor)
+	int shot = rand() % attacker->attackPower + 1;
+	if(shot > target->armor)
 	{
-		Ogre::String log("Hit (" + Ogre::StringConverter::toString(shot) + " > " + Ogre::StringConverter::toString(target.armor) + ')');
+		Ogre::String log("Hit (" + Ogre::StringConverter::toString(shot) + " > " + Ogre::StringConverter::toString(target->armor) + ')');
 		consoleOutput(log);
 		return true;
 	}
 	else
 	{
-		Ogre::String log("Miss (" + Ogre::StringConverter::toString(shot) + " < " + Ogre::StringConverter::toString(target.armor)+ ')');
+		Ogre::String log("Miss (" + Ogre::StringConverter::toString(shot) + " < " + Ogre::StringConverter::toString(target->armor)+ ')');
 		consoleOutput(log);
 	}
 	return false;
