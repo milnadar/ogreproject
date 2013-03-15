@@ -7,7 +7,7 @@
 
 class Cell;
 
-enum UnitType {trooper = 1, vehicle};
+enum UnitType {TROOPER = 1, VEHICLE};
 
 struct UnitStats{
 	UnitStats(int _speed, int _armor, int _mele, int _numberAttacks, int _attackPower, int _attackDistance, int _distanceModifier);
@@ -67,7 +67,7 @@ public:
 	void kill() {alive = false;};
 	bool isAlive() const {return alive;};
 	virtual const UnitStats* getUnitStats() const = 0;
-	const UnitType& getUnitType() const {return unitType;};
+	UnitType getType() const {return unitType;};
 protected:
 	Ogre::Entity *unitEntity;
 	Ogre::SceneNode *unitNode;

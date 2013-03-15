@@ -88,9 +88,12 @@ void GameUnit::addTime(Ogre::Real deltaTime)
 void GameUnit::startAnimation(AnimationList animation, bool loop = true)
 {
 	Ogre::String unitAnimations[] = {"Walk", "idle", "Shoot", "Die"};
-	animationState = unitEntity->getAnimationState(unitAnimations[animation]);
-	animationState->setLoop(loop);
-	animationState->setEnabled(true);
+	if(unitEntity->_isAnimated())
+	{	
+		animationState = unitEntity->getAnimationState(unitAnimations[animation]);
+		animationState->setLoop(loop);
+		animationState->setEnabled(true);
+	}
 }
 
 void GameUnit::stopAnimation()
@@ -121,6 +124,7 @@ Trooper::Trooper(int id, int player, TrooperStats stats, Ogre::SceneManager *man
 			unitNode->yaw(Ogre::Degree(180));
 		}
 	}
+	unitType = UnitType::TROOPER;
 	stepsLeft = stats.movementSpeed;
 	numberAttacksLeft = stats.attackPower;
 }
@@ -149,7 +153,6 @@ Vehicle::Vehicle(int id, int player, VehicleStats stats, Ogre::SceneManager *man
 	{
 		unitEntity = sceneManager->createEntity(unitName, "car.mesh");
 		unitNode = sceneManager->getRootSceneNode()->createChildSceneNode(unitName + "node");
-		unitNode->setScale(0.05, 0.05, 0.05);
 		unitNode->attachObject(unitEntity);
 		unitEntity->setUserAny(Ogre::Any(this));
 		if(player == 2)
@@ -157,6 +160,7 @@ Vehicle::Vehicle(int id, int player, VehicleStats stats, Ogre::SceneManager *man
 			unitNode->yaw(Ogre::Degree(180));
 		}
 	}
+	unitType = UnitType::VEHICLE;
 	stepsLeft = stats.movementSpeed;
 	numberAttacksLeft = stats.attackPower;
 }

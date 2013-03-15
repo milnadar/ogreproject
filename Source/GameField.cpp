@@ -64,7 +64,7 @@ void GameField::setupField()
 
 bool GameField::setUnitOnCell(Cell *cell, GameUnit* unit)
 {
-	if(cell->isWalkable())
+	if(cell != NULL && cell->isWalkable() && unit!= NULL)
 	{
 		//clear cell unit was on
 		Cell *unitCell = unit->getCell();

@@ -103,15 +103,17 @@ void TutorialApplication::setupScene()
 	field->setupField();
 	for(int i = 0; i < 5; i ++)
 	{
-		currentUnit = UnitManager::getSingletonPtr()->createUnit(currentPlayer);
+		currentUnit = UnitManager::getSingletonPtr()->createUnit(currentPlayer, 1);
 		field->setUnitOnCell(field->getCellByIndex(i, i + 2), currentUnit);
 	}
+	currentUnit = currentUnit = UnitManager::getSingletonPtr()->createUnit(currentPlayer, 2);
+	field->setUnitOnCell(field->getCellByIndex(10, 5), currentUnit);
 	updateUnitListForCurrentPlayer();
-	Ogre::Entity *entity = mSceneMgr->createEntity("tube", "car.mesh");
-	Ogre::SceneNode *node = mSceneMgr->getRootSceneNode()->createChildSceneNode("nodetube");
-	node->attachObject(entity);
-	node->setScale(50,50,50);
-	node->setPosition(20, 0, 51);
+	//Ogre::Entity *entity = mSceneMgr->createEntity("tube", "car.mesh");
+	//Ogre::SceneNode *node = mSceneMgr->getRootSceneNode()->createChildSceneNode("nodetube");
+	//node->attachObject(entity);
+	//node->setScale(50,50,50);
+	//node->setPosition(20, 0, 51);
 }
 
 void TutorialApplication::changeGameState()
@@ -289,8 +291,8 @@ bool TutorialApplication::mousePressedInEditState(const OIS::MouseEvent &arg,OIS
 				if (itr->movable && itr->movable->getName().find("cell") == 0)
 				{
 					Cell* cell = Ogre::any_cast<Cell*>(itr->movable->getUserAny());
-					field->setUnitOnCell(cell, currentUnit);
-					currentUnit = NULL;
+					if(field->setUnitOnCell(cell, currentUnit))
+						currentUnit = NULL;
 					break;
 				}
 			}
@@ -359,6 +361,11 @@ bool TutorialApplication::mousePressedInPlayState(const OIS::MouseEvent &arg,OIS
 					selectUnit(Ogre::any_cast<Trooper*>(itr->movable->getUserAny()));
 					break;
 				}
+				else if(itr->movable && itr->movable->getName().find("vehicle") == 0)
+				{
+					selectUnit(Ogre::any_cast<Vehicle*>(itr->movable->getUserAny()));
+					break;
+				}
 			}
 		}
 	}
@@ -389,7 +396,7 @@ void TutorialApplication::buttonClicked(MyGUI::Widget* _widget)
 		if(_widget->getName() == "createUnitButton")
 		{
 			if(gameState == GameState::EditState)
-				currentUnit = UnitManager::getSingletonPtr()->createUnit(currentPlayer);
+				currentUnit = UnitManager::getSingletonPtr()->createUnit(currentPlayer, 1);
 		}
 		else if(_widget->getName() == "changeGameStateButton")
 		{
