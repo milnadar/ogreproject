@@ -108,6 +108,8 @@ public:
 	virtual void makeOneShot();
 	virtual bool canShoot() const {return canPerformRangeAttack && unitStats.ammoCount != 0;};
 	virtual void resetTurnStats();
+	void setUnitIn(GameUnit *pilot);
+	void takeUnitOut();
 private:
 	VehicleStats unitStats;
 };

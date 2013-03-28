@@ -1,17 +1,17 @@
 #include "Cell.h"
 
 Cell::Cell(int iPos, int jPos, Ogre::String idName) : ipos(iPos), jpos(jPos), idname(idName),
-	f(0), g(0), h(0), state(0), parent(NULL), cellEntity(NULL), unit(NULL), closed(false), showedAsAvailable(false),
+	f(0), g(0), h(0), parent(NULL), cellEntity(NULL), unit(NULL), closed(false), showedAsAvailable(false),
 	checkedForRadius(false)
 {
-
+	state = CellState::EMPTY;
 }
 
 bool Cell::isWalkable()
 {
-	if(state != 0)
-		return false;
-	return true;
+	if(state == CellState::EMPTY || checkedForRadius)
+		return true;
+	return false;
 }
 
 void Cell::clear()
@@ -30,13 +30,13 @@ void Cell::setUnit(GameUnit *unit)
 	//this->unit = unit;
 	Ogre::Vector3 pos = cellEntity->getParentSceneNode()->getPosition();
 	unit->SetPosition(pos);
-	state = 3; //tmp value
+	state = CellState::UNIT; //tmp value
 }
 
 void Cell::removeUnitFromCell()
 {
 	//this->unit = NULL;
-	state = 0;
+	state = CellState::EMPTY;
 }
 
 void Cell::showCellAsAvailable(bool available)

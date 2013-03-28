@@ -101,19 +101,15 @@ void TutorialApplication::setupScene()
 	UnitManager *unitManager = new UnitManager(mSceneMgr);
 	field = new GameField(mSceneMgr);
 	field->setupField();
+	GameUnit *unit = NULL;
 	for(int i = 0; i < 5; i ++)
 	{
-		currentUnit = UnitManager::getSingletonPtr()->createUnit(currentPlayer, 1);
-		field->setUnitOnCell(field->getCellByIndex(i, i + 2), currentUnit);
+		unit = UnitManager::getSingletonPtr()->createUnit(currentPlayer, 1);
+		field->setUnitOnCell(field->getCellByIndex(i, i + 2), unit);
 	}
-	currentUnit = currentUnit = UnitManager::getSingletonPtr()->createUnit(currentPlayer, 2);
-	field->setUnitOnCell(field->getCellByIndex(10, 5), currentUnit);
+	unit = UnitManager::getSingletonPtr()->createUnit(currentPlayer, 2);
+	field->setUnitOnCell(field->getCellByIndex(10, 5), unit);
 	updateUnitListForCurrentPlayer();
-	//Ogre::Entity *entity = mSceneMgr->createEntity("tube", "car.mesh");
-	//Ogre::SceneNode *node = mSceneMgr->getRootSceneNode()->createChildSceneNode("nodetube");
-	//node->attachObject(entity);
-	//node->setScale(50,50,50);
-	//node->setPosition(20, 0, 51);
 }
 
 void TutorialApplication::changeGameState()
@@ -442,7 +438,13 @@ bool TutorialApplication::moveUnitToCell(GameUnit *unit, Cell* cell)
 {
 	std::vector<Cell*> path;
 	std::vector<Cell*>::iterator pathItr;
-	path = field->findPath(unit->getCell(), cell);
+	//when vehicle is selected, avoid clicking to cell that is occupied by this vehicle
+	if(unit->getType() == UnitType::VEHICLE)
+	{
+		if(field->areCellsNeighbours(unit->getCell(), cell, 0))
+			return false;
+	}
+	path = field->findPath(unit->getCell(), cell, unit->getType() - 1);
 	if(path.size() > unit->stepsLeftToMove() || path.empty())
 		return false;
 	finalCell = cell;

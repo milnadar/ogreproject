@@ -182,3 +182,8 @@ void Vehicle::resetTurnStats()
 	stepsLeft = unitStats.movementSpeed;
 	numberAttacksLeft = unitStats.attackPower;
 }
+
+void Vehicle::setUnitIn(GameUnit* unit)
+{
+	//
+}

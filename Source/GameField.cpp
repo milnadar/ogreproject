@@ -44,7 +44,7 @@ void GameField::setupField()
 			if(i % 2 != 0 && j == fieldHeight - 1)
 			{
 				ent->setVisible(false);
-				cell->setState(1);
+				cell->setState(Cell::CellState::OTHER);
 			}
 			node = sceneMgr->getRootSceneNode()->createChildSceneNode(name + "node", pos);
 			node->attachObject(ent);
@@ -69,9 +69,15 @@ bool GameField::setUnitOnCell(Cell *cell, GameUnit* unit)
 		//clear cell unit was on
 		Cell *unitCell = unit->getCell();
 		if(unitCell != NULL)
+		{
 			unitCell->removeUnitFromCell();
+			if(unit->getType() == UnitType::VEHICLE)
+				makeCellsInRadiusOccupied(unitCell, 1, false);
+		}
 		cell->setUnit(unit);
 		unit->setUnitCell(cell);
+		if(unit->getType() == UnitType::VEHICLE)
+			makeCellsInRadiusOccupied(cell, 1, true);
 		return true;
 	}
 	return false;
@@ -90,6 +96,7 @@ bool GameField::setUnitOnCell(int indexi, int indexj, GameUnit* unit)
 			Cell *unitCell = unit->getCell();
 			if(unitCell != NULL)
 				unitCell->removeUnitFromCell();
+			fieldCell->setUnit(unit);
 			fieldCell->setUnit(unit);
 			return true;
 		}
@@ -160,7 +167,112 @@ void GameField::setAvailableCellsInRadius(Cell *cell, int radius, bool available
 		}
 }
 
-std::vector<Cell*> GameField::findPath(const Cell* _start, const Cell* _finish)
+bool GameField::areCellsNeighbours(const Cell* parent, const Cell* target, int radius) const
+{
+	Cell* neighbour = NULL;
+	int shiftForXr;
+	int shiftForXl;
+	if (parent->getI() % 2 == 0)
+	{
+		shiftForXr = 0;
+		shiftForXl = 1;
+	}
+	else
+	{
+		shiftForXr = 1;
+		shiftForXl = 0;
+	}
+	//get all 6 neighbours of the cell
+	for(int i = 0; i < 6; i ++)
+	{
+		switch(i)
+		{
+		case 0 : {neighbour = getCellByIndex(parent->getI() + 1, parent->getJ() - shiftForXl); break;};
+		case 1 : {neighbour = getCellByIndex(parent->getI() + 1, parent->getJ() + shiftForXr); break;};
+		case 2 : {neighbour = getCellByIndex(parent->getI(), parent->getJ() + 1); break;};
+		case 3 : {neighbour = getCellByIndex(parent->getI() - 1, parent->getJ() + shiftForXr); break;};
+		case 4 : {neighbour = getCellByIndex(parent->getI() - 1, parent->getJ() - shiftForXl); break;};
+		case 5 : {neighbour = getCellByIndex(parent->getI(), parent->getJ() - 1); break;};
+		}
+		if(neighbour == target)
+			return true;
+	}
+	return false;
+}
+
+bool GameField::makeCellsInRadiusOccupied(const Cell* parent, int radius, bool occupied)
+{
+	Cell* neighbour = NULL;
+	int shiftForXr;
+	int shiftForXl;
+	if (parent->getI() % 2 == 0)
+	{
+		shiftForXr = 0;
+		shiftForXl = 1;
+	}
+	else
+	{
+		shiftForXr = 1;
+		shiftForXl = 0;
+	}
+	//get all 6 neighbours of the cell
+	for(int i = 0; i < 6; i ++)
+	{
+		switch(i)
+		{
+		case 0 : {neighbour = getCellByIndex(parent->getI() + 1, parent->getJ() - shiftForXl); break;};
+		case 1 : {neighbour = getCellByIndex(parent->getI() + 1, parent->getJ() + shiftForXr); break;};
+		case 2 : {neighbour = getCellByIndex(parent->getI(), parent->getJ() + 1); break;};
+		case 3 : {neighbour = getCellByIndex(parent->getI() - 1, parent->getJ() + shiftForXr); break;};
+		case 4 : {neighbour = getCellByIndex(parent->getI() - 1, parent->getJ() - shiftForXl); break;};
+		case 5 : {neighbour = getCellByIndex(parent->getI(), parent->getJ() - 1); break;};
+		}
+		if(neighbour != NULL)
+			neighbour->setState(occupied ? Cell::CellState::UNIT : Cell::CellState::EMPTY);
+	}
+	return true;
+}
+
+
+void GameField::ignoreCellsInRadius(Cell* parent, int radius, bool ignore)
+{
+	Cell* neighbour = NULL;
+	int shiftForXr;
+	int shiftForXl;
+	if (parent->getI() % 2 == 0)
+	{
+		shiftForXr = 0;
+		shiftForXl = 1;
+	}
+	else
+	{
+		shiftForXr = 1;
+		shiftForXl = 0;
+	}
+	//get all 6 neighbours of the cell
+	for(int i = 0; i < 6; i ++)
+	{
+		switch(i)
+		{
+		case 0 : {neighbour = getCellByIndex(parent->getI() + 1, parent->getJ() - shiftForXl); break;};
+		case 1 : {neighbour = getCellByIndex(parent->getI() + 1, parent->getJ() + shiftForXr); break;};
+		case 2 : {neighbour = getCellByIndex(parent->getI(), parent->getJ() + 1); break;};
+		case 3 : {neighbour = getCellByIndex(parent->getI() - 1, parent->getJ() + shiftForXr); break;};
+		case 4 : {neighbour = getCellByIndex(parent->getI() - 1, parent->getJ() - shiftForXl); break;};
+		case 5 : {neighbour = getCellByIndex(parent->getI(), parent->getJ() - 1); break;};
+		}
+		if(neighbour != NULL)
+			neighbour->setCheckedForRadius(ignore);
+	}
+}
+
+std::vector<Cell*> GameField::getCellsInRadius(const Cell* parent, int radius, bool includeInner)
+{
+	return foundedCells;
+	//
+}
+
+std::vector<Cell*> GameField::findPath(const Cell* _start, const Cell* _finish, int unitSize = 0)
 {
 	bool fin = false;
 	std::list<Cell*> opened;
@@ -181,6 +293,8 @@ std::vector<Cell*> GameField::findPath(const Cell* _start, const Cell* _finish)
 		std::cout << "One of points is out of range\n";
 		return tmpPath;
 	}
+	if(unitSize > 0)
+		ignoreCellsInRadius(start, 0, true);
 	opened.push_back(start);
 	//while ((!listContains (closed, finish)) && (opened.size() != 0))
 	while ((!fin) && (opened.size() != 0))
@@ -226,7 +340,8 @@ std::vector<Cell*> GameField::findPath(const Cell* _start, const Cell* _finish)
 			if (child == NULL)
 				continue;
 			current->setCheckedForRadius(true);
-			if (child->isWalkable() && !child->isClosed() && cellsInRadiusAreWalkable(child, 0))
+			//check if cell is walkable and all cells around it are also walkable so vehicle could fit
+			if (child->isWalkable() && !child->isClosed() && cellsInRadiusAreWalkable(child, unitSize))
 			{
 				current->setCheckedForRadius(false);
 				if (!listContains(opened, child))
@@ -269,7 +384,7 @@ void GameField::clearMap()
 			field[i][j]->clear();
 }
 
-Cell* GameField::getCellByIndex(int index1, int index2)
+Cell* GameField::getCellByIndex(int index1, int index2) const
 {
 	Cell *cell = NULL;
 	if(index1 < fieldHeight && index2 < fieldWidth && index1 >= 0 && index2 >= 0)
@@ -284,10 +399,9 @@ int GameField::heuristic(Cell* start, Cell* finish)
 
 bool GameField::cellsInRadiusAreWalkable(const Cell* parent, int radius)
 {
-	//if(!--radius > 0)
-		//return true;
+	if(radius == 0)
+		return true;
 	Cell* child = NULL;
-	bool result = true;
 	int shiftForXr;
 	int shiftForXl;
  	for (int index = 0; index < 6; index++)
@@ -319,11 +433,11 @@ bool GameField::cellsInRadiusAreWalkable(const Cell* parent, int radius)
 		}//switch
 		if(child != NULL && child != parent)
 		{
-			if(!child->isWalkable() && !child->isCheckedForRadius())
-				result = false;
+			if(!child->isWalkable())
+				return false;
 		}
 	}
-	return result;
+	return true;
 }
 
 bool GameField::validateIndexes(int indexi, int indexj)
