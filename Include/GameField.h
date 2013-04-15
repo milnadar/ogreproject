@@ -22,11 +22,12 @@ public:
 	bool setUnitOnCell(Cell*, GameUnit*);
 	bool removeUnitFromCell(GameUnit *unit);
 	//bool setUnitOnCell(const Cell*, GameUnit*); ---?
-	void showavailableCellsToMove(GameUnit *unit, bool show);
-	void setAvailableCellsInRadius(Cell *cell, int radius, bool available);
+	void showAvailableCellsToMove(const GameUnit *unit, bool show);
+	void showAvailableCellsToEject(const GameUnit *unit, bool show);
 	bool areCellsNeighbours(const Cell* parent, const Cell* target, int radius) const;
 	bool setUnitInVehicle(GameUnit *unit, GameUnit *vehicle);
 private:
+	void setAvailableCellsInRadius(Cell *cell, int radius, bool available);
 	bool cellsInRadiusAreWalkable(const Cell* parent, int radius);
 	bool makeCellsInRadiusOccupied(const Cell* parent, int radius, bool occupied);
 	void ignoreCellsInRadius(Cell* parent, int radius, bool ignore);

@@ -140,12 +140,21 @@ bool GameField::removeUnitFromCell(GameUnit *unit)
 	return false;
 }
 
-void GameField::showavailableCellsToMove(GameUnit *unit, bool show)
+void GameField::showAvailableCellsToMove(const GameUnit *unit, bool show)
 {
 	if(unit != NULL && unit->playable())
 	{
 		Cell *unitCell = unit->getCell();
 		setAvailableCellsInRadius(unitCell, unit->stepsLeftToMove(), show);
+	}
+}
+
+void GameField::showAvailableCellsToEject(const GameUnit *unit, bool show)
+{
+	if(unit != NULL && unit->getType() == UnitType::VEHICLE)
+	{
+		Cell *unitCell = unit->getCell();
+		setAvailableCellsInRadius(unitCell, 2, show);
 	}
 }
 

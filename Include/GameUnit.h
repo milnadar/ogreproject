@@ -41,7 +41,7 @@ public:
 	enum AnimationList {WALK_ANIMATION, IDLE_ANIMATION, SHOOT_ANIMATION, DEATH_ANIMATION};
 	GameUnit(int id, int player, Ogre::SceneManager *manager);
 	~GameUnit();
-	Cell* getCell() {return unitCell;};
+	Cell* getCell() const {return unitCell;};
 	void setUnitCell(Cell* newCell) {unitCell = newCell;};
 	Ogre::String getUnitName() const {return unitName;};
 	int getOwner() const {return owner;};
@@ -50,7 +50,7 @@ public:
 	bool TranslateUnit(Ogre::Vector3&);
 	void moveOneStep();
 	virtual void makeOneShot() = 0;
-	int stepsLeftToMove() {return stepsLeft;};
+	int stepsLeftToMove() const {return stepsLeft;};
 	bool hasMoreShots() const {return numberAttacksLeft > 0;};
 	virtual void resetTurnStats() = 0;
 	Ogre::SceneNode* getNode() const {return unitNode;};
@@ -111,6 +111,7 @@ public:
 	virtual bool canShoot() const {return canPerformRangeAttack && unitStats.ammoCount != 0;};
 	virtual void resetTurnStats();
 	bool setUnitIn(GameUnit *pilot);
+	bool canEject();
 	GameUnit* ejectPilot();
 private:
 	GameUnit *pilot;

@@ -25,10 +25,12 @@ TutorialApplication::TutorialApplication(void)
 	finalCell = NULL;
 	attacker = NULL;
 	target = NULL;
+	ejectedUnit = NULL;
 	gameConsole = NULL;
 	interfaceBlocked = false;
 	gameState = GameState::PlayState;
 	currentPlayer = Players::player1;
+	needToEject = false;
 }
 //-------------------------------------------------------------------------------------
 TutorialApplication::~TutorialApplication(void)
@@ -73,6 +75,9 @@ void TutorialApplication::setupGUI()
 	button->eventMouseButtonClick = MyGUI::newDelegate(this, &TutorialApplication::buttonClicked);
 	button = gui->createWidget<MyGUI::Button>("Button", 10, 82, 300, 26, MyGUI::Align::Default, "Main", "changePlayerButton");
 	button->setCaption("Change player");
+	button->eventMouseButtonClick = MyGUI::newDelegate(this, &TutorialApplication::buttonClicked);
+	button = gui->createWidget<MyGUI::Button>("Button", 10, 122, 300, 26, MyGUI::Align::Default, "Main", "ejectPilot");
+	button->setCaption("Eject unit");
 	button->eventMouseButtonClick = MyGUI::newDelegate(this, &TutorialApplication::buttonClicked);
 	MyGUI::ListBox *list = gui->createWidget<MyGUI::ListBox>("ListBox", 10, 120, 300, 100, MyGUI::Align::Default, "Main", "unitList");
 	list->eventListSelectAccept += MyGUI::newDelegate(this, &TutorialApplication::itemAcceptedCallback);
@@ -137,7 +142,7 @@ void TutorialApplication::selectUnit(GameUnit *unit)
 		currentUnit = unit;
 		currentUnit->getNode()->showBoundingBox(true);
 		consoleOutput("Selected unit " + currentUnit->getUnitName());
-		field->showavailableCellsToMove(currentUnit, true);
+		field->showAvailableCellsToMove(currentUnit, true);
 	}
 }
 
@@ -146,7 +151,7 @@ void TutorialApplication::deselectCurrentUnit()
 	if(currentUnit != NULL && currentUnit->playable())
 	{
 		currentUnit->getNode()->showBoundingBox(false);
-		field->showavailableCellsToMove(currentUnit, false);
+		field->showAvailableCellsToMove(currentUnit, false);
 		currentUnit = NULL;
 	}
 }
@@ -185,7 +190,7 @@ bool TutorialApplication::frameRenderingQueued(const Ogre::FrameEvent &evt)
 			{
 				currentUnit->stopAnimation();
 				field->setUnitOnCell(finalCell, currentUnit);
-				field->showavailableCellsToMove(currentUnit, true);
+				field->showAvailableCellsToMove(currentUnit, true);
 				finalCell = NULL;
 			}
 			else
@@ -263,7 +268,7 @@ bool TutorialApplication::mousePressed(const OIS::MouseEvent &arg, OIS::MouseBut
 	{
 		mRmouseDown = true;
 		MyGUI::PointerManager::getInstance().setVisible(false);
-		deselectCurrentUnit();
+		//deselectCurrentUnit();
 	}
 	if(gameState == GameState::EditState)
 		result = mousePressedInEditState(arg, id);
@@ -326,6 +331,26 @@ bool TutorialApplication::mousePressedInPlayState(const OIS::MouseEvent &arg,OIS
 		{
 			if(currentUnit != NULL && currentUnit->playable())
 			{
+				//if unit has to be ejected from vehicle
+				if(needToEject && currentUnit->getType() == UnitType::VEHICLE)
+				{
+					if (itr->movable && itr->movable->getName().find("cell") == 0)
+					{
+						//if mouse was clicked in cell which is available to eject
+						Cell *cell = Ogre::any_cast<Cell*>(itr->movable->getUserAny());
+						if(cell->isShowedAsAvailable())
+						{
+							needToEject = false;
+							Vehicle *vehicle = static_cast<Vehicle*>(currentUnit);
+							GameUnit *unit = vehicle->ejectPilot();
+							unit->setVisible(true);
+							field->showAvailableCellsToEject(currentUnit, false);
+							field->setUnitOnCell(cell, unit);
+							selectUnit(unit);
+						}
+					}
+					return true;
+				}
 				if(itr->movable && itr->movable->getName().find("trooper") == 0)
 				{
 					GameUnit* pointedUnit = Ogre::any_cast<Trooper*>(itr->movable->getUserAny());
@@ -387,7 +412,16 @@ bool TutorialApplication::mousePressedInPlayState(const OIS::MouseEvent &arg,OIS
 	}
 	else if(mRmouseDown)
 	{
-		//
+		if(needToEject)
+		{
+			needToEject = false;
+			field->showAvailableCellsToEject(currentUnit, false);
+			field->showAvailableCellsToMove(currentUnit, true);
+		}
+		else
+		{
+			deselectCurrentUnit();
+		}
 	}
 	return true;
 }
@@ -434,6 +468,19 @@ void TutorialApplication::buttonClicked(MyGUI::Widget* _widget)
 			UnitManager::getSingletonPtr()->resetUnitsStats();
 			endTurn();
 		}
+		else if(_widget->getName() == "ejectPilot")
+		{
+			if(currentUnit != NULL && currentUnit->getType() == UnitType::VEHICLE)
+			{
+				Vehicle *vehicle = static_cast<Vehicle*>(currentUnit);
+				if(vehicle->canEject())
+				{
+					needToEject = true;
+					field->showAvailableCellsToMove(currentUnit, false);
+					field->showAvailableCellsToEject(currentUnit, true);
+				}
+			}
+		}
 	}
 }
 
@@ -468,7 +515,7 @@ bool TutorialApplication::moveUnitToCell(GameUnit *unit, Cell* cell)
 	if(path.size() > unit->stepsLeftToMove() || path.empty())
 		return false;
 	finalCell = path.front();
-	field->showavailableCellsToMove(currentUnit, false);
+	field->showAvailableCellsToMove(currentUnit, false);
 	field->removeUnitFromCell(currentUnit);
 	for(pathItr = path.begin(); pathItr != path.end(); pathItr++)
 		{walkList.push_front((*pathItr)->getEntity()->getParentSceneNode()->getPosition());

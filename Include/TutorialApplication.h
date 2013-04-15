@@ -81,6 +81,10 @@ private:
 	//
 	GameUnit *attacker;
 	GameUnit *target;
+	//
+	GameUnit *ejectedUnit;
+	//set to true only when unit need to be ejected. 
+	bool needToEject;
 	Ogre::Real distance;
 	Ogre::Vector3 destination;
 	Ogre::Vector3 direction;

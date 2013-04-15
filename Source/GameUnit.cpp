@@ -190,6 +190,11 @@ bool Vehicle::setUnitIn(GameUnit* unit)
 	return false;
 }
 
+bool Vehicle::canEject()
+{
+	return stepsLeft != 0;
+}
+
 GameUnit* Vehicle::ejectPilot()
 {
 	GameUnit *unit = NULL;
