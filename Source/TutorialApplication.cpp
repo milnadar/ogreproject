@@ -130,10 +130,12 @@ void TutorialApplication::changeGameState()
 
 void TutorialApplication::selectUnit(GameUnit *unit)
 {
-	if(unit != NULL)
+	if(unit != NULL && unit->playable() && unit->getOwner() == currentPlayer)
 	{
+		if(currentUnit != NULL)
+			deselectCurrentUnit();
 		currentUnit = unit;
-		//currentUnit->getNode()->showBoundingBox(true);
+		currentUnit->getNode()->showBoundingBox(true);
 		consoleOutput("Selected unit " + currentUnit->getUnitName());
 		field->showavailableCellsToMove(currentUnit, true);
 	}
@@ -141,7 +143,7 @@ void TutorialApplication::selectUnit(GameUnit *unit)
 
 void TutorialApplication::deselectCurrentUnit()
 {
-	if(currentUnit != NULL)
+	if(currentUnit != NULL && currentUnit->playable())
 	{
 		currentUnit->getNode()->showBoundingBox(false);
 		field->showavailableCellsToMove(currentUnit, false);
@@ -322,7 +324,7 @@ bool TutorialApplication::mousePressedInPlayState(const OIS::MouseEvent &arg,OIS
         Ogre::RaySceneQueryResult::iterator itr;
 		for(itr = result.begin(); itr != result.end(); itr++)
 		{
-			if(currentUnit != NULL)
+			if(currentUnit != NULL && currentUnit->playable())
 			{
 				if(itr->movable && itr->movable->getName().find("trooper") == 0)
 				{
@@ -338,9 +340,27 @@ bool TutorialApplication::mousePressedInPlayState(const OIS::MouseEvent &arg,OIS
 					else
 					{
 						//deselectCurrentUnit();
-						currentUnit = pointedUnit;
-						selectUnit(currentUnit);
+						//currentUnit = pointedUnit;
+						selectUnit(pointedUnit);
 					}
+					break;
+				}
+				else if(itr->movable && itr->movable->getName().find("vehicle") == 0)
+				{
+					Vehicle *pointedVehicle = Ogre::any_cast<Vehicle*>(itr->movable->getUserAny());
+					if(pointedVehicle->getOwner() == 0)
+					{
+						GameUnit *unit = currentUnit;
+						if(field->setUnitInVehicle(unit, pointedVehicle))
+						{
+							//if driver was set in vehicle remove it's figure from field
+							deselectCurrentUnit();
+							field->removeUnitFromCell(unit);
+							selectUnit(pointedVehicle);
+						}
+					}
+					else if(pointedVehicle->getOwner() == currentPlayer)
+						selectUnit(pointedVehicle);
 					break;
 				}
 				else if (itr->movable && itr->movable->getName().find("cell") == 0)
@@ -447,7 +467,9 @@ bool TutorialApplication::moveUnitToCell(GameUnit *unit, Cell* cell)
 	path = field->findPath(unit->getCell(), cell, unit->getType() - 1);
 	if(path.size() > unit->stepsLeftToMove() || path.empty())
 		return false;
-	finalCell = cell;
+	finalCell = path.front();
+	field->showavailableCellsToMove(currentUnit, false);
+	field->removeUnitFromCell(currentUnit);
 	for(pathItr = path.begin(); pathItr != path.end(); pathItr++)
 		{walkList.push_front((*pathItr)->getEntity()->getParentSceneNode()->getPosition());
 	}

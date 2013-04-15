@@ -16,6 +16,7 @@ public:
 	void setG(int value) {g = value;};
 	void setH(int value) {h = value;};
 	void setState(CellState value) {state = value;};
+	CellState getState() const {return state;};
 	void setParent(Cell *parent) {this->parent = parent;};
 	Cell* getParent() const {return parent;};
 	void setCellEntity(Ogre::Entity *entity) {cellEntity = entity;};

@@ -33,7 +33,7 @@ GameUnit::~GameUnit()
 	//
 }
 
-void GameUnit::SetPosition(Ogre::Vector3 position)
+void GameUnit::SetPosition(const Ogre::Vector3& position)
 {
 	if(unitNode != NULL)
 		unitNode->setPosition(position);
@@ -65,20 +65,6 @@ void GameUnit::moveOneStep()
 		stepsLeft = 0;
 }
 
-/*void GameUnit::makeOneShot()
-{
-	canPerformRangeAttack = false;
-	if(--numberAttacksLeft < 0)
-		numberAttacksLeft = 0;
-}*/
-
-/*void GameUnit::resetTurnStats()
-{
-	canPerformMovement = true;
-	canPerformRangeAttack = true;
-	canPerformMeleAttack = true;
-}*/
-
 void GameUnit::addTime(Ogre::Real deltaTime)
 {
 	if(animationState != NULL)
@@ -88,9 +74,10 @@ void GameUnit::addTime(Ogre::Real deltaTime)
 void GameUnit::startAnimation(AnimationList animation, bool loop = true)
 {
 	Ogre::String unitAnimations[] = {"Walk", "idle", "Shoot", "Die"};
-	if(unitEntity->_isAnimated())
+	Ogre::String animationName = unitAnimations[animation];
+	if(unitEntity->hasAnimationState(animationName))
 	{	
-		animationState = unitEntity->getAnimationState(unitAnimations[animation]);
+		animationState = unitEntity->getAnimationState(animationName);
 		animationState->setLoop(loop);
 		animationState->setEnabled(true);
 	}
@@ -106,6 +93,15 @@ void GameUnit::resetAnimation()
 {
 	if(animationState != NULL)
 		animationState->setTimePosition(0);
+}
+
+void GameUnit::setVisible(bool visible)
+{
+	if(sceneManager != NULL)
+	{
+		if(unitEntity != NULL)
+			unitEntity->setVisible(visible);
+	}
 }
 
 Trooper::Trooper(int id, int player, TrooperStats stats, Ogre::SceneManager *manager)
@@ -146,7 +142,7 @@ void Trooper::resetTurnStats()
 }
 
 Vehicle::Vehicle(int id, int player, VehicleStats stats, Ogre::SceneManager *manager)
-	: GameUnit(id, player, manager), unitStats(stats)
+	: GameUnit(id, 0, manager), unitStats(stats), pilot(NULL)
 {
 	unitName = "vehicle" + Ogre::StringConverter::toString(id);
 	if(sceneManager)
@@ -183,7 +179,28 @@ void Vehicle::resetTurnStats()
 	numberAttacksLeft = unitStats.attackPower;
 }
 
-void Vehicle::setUnitIn(GameUnit* unit)
+bool Vehicle::setUnitIn(GameUnit* unit)
 {
-	//
+	if(unit != NULL && pilot == NULL)
+	{
+		pilot = unit;
+		owner = unit->getOwner();
+		return true;
+	}
+	return false;
+}
+
+GameUnit* Vehicle::ejectPilot()
+{
+	GameUnit *unit = NULL;
+	if(pilot != NULL)
+	{
+		owner = 0;
+		unit = pilot;
+		pilot = NULL;
+		//after unit enetered vehicle he can not drive it in this turn
+		//stepsLeft = 0;
+		//canPerformMovement = false;
+	}
+	return unit;
 }

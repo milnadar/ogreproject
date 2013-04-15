@@ -45,7 +45,7 @@ public:
 	void setUnitCell(Cell* newCell) {unitCell = newCell;};
 	Ogre::String getUnitName() const {return unitName;};
 	int getOwner() const {return owner;};
-	void SetPosition(Ogre::Vector3);
+	void SetPosition(const Ogre::Vector3& position);
 	Ogre::Vector3 const getPosition();
 	bool TranslateUnit(Ogre::Vector3&);
 	void moveOneStep();
@@ -68,6 +68,8 @@ public:
 	bool isAlive() const {return alive;};
 	virtual const UnitStats* getUnitStats() const = 0;
 	UnitType getType() const {return unitType;};
+	void setVisible(bool visible);
+	bool playable() const {return unitCell != NULL;};
 protected:
 	Ogre::Entity *unitEntity;
 	Ogre::SceneNode *unitNode;
@@ -108,9 +110,10 @@ public:
 	virtual void makeOneShot();
 	virtual bool canShoot() const {return canPerformRangeAttack && unitStats.ammoCount != 0;};
 	virtual void resetTurnStats();
-	void setUnitIn(GameUnit *pilot);
-	void takeUnitOut();
+	bool setUnitIn(GameUnit *pilot);
+	GameUnit* ejectPilot();
 private:
+	GameUnit *pilot;
 	VehicleStats unitStats;
 };
 

@@ -25,6 +25,26 @@ GameField::~GameField()
 		}
 }
 
+void GameField::printField()
+{
+	std::cout << "\n\n";
+	for(int j = fieldHeight-1; j >=0 ; j--)
+	{
+		for(int i = 0; i < fieldWidth; i++)
+		{
+			std::cout << field[j][i]->getState();
+		}
+		std::cout << "   ";
+		for(int i = 0; i < fieldWidth; i++)
+		{
+			std::cout << field[j][i]->isCheckedForRadius();
+		}
+		std::cout << '\n';
+		if(j % 2 == 0)
+			std::cout << ' ';
+	}
+}
+
 void GameField::setupField()
 {
 	Ogre::Entity *ent;
@@ -66,6 +86,7 @@ bool GameField::setUnitOnCell(Cell *cell, GameUnit* unit)
 {
 	if(cell != NULL && cell->isWalkable() && unit!= NULL)
 	{
+		printField();
 		//clear cell unit was on
 		Cell *unitCell = unit->getCell();
 		if(unitCell != NULL)
@@ -78,6 +99,7 @@ bool GameField::setUnitOnCell(Cell *cell, GameUnit* unit)
 		unit->setUnitCell(cell);
 		if(unit->getType() == UnitType::VEHICLE)
 			makeCellsInRadiusOccupied(cell, 1, true);
+		printField();
 		return true;
 	}
 	return false;
@@ -104,22 +126,25 @@ bool GameField::setUnitOnCell(int indexi, int indexj, GameUnit* unit)
 	return false;
 }
 
+bool GameField::removeUnitFromCell(GameUnit *unit)
+{
+	Cell *cell = unit->getCell();
+	if(cell != NULL)
+	{
+		cell->removeUnitFromCell();
+		if(unit->getType() == UnitType::VEHICLE)
+			makeCellsInRadiusOccupied(unit->getCell(), 1, false);
+		unit->setUnitCell(NULL);
+		return true;
+	}
+	return false;
+}
+
 void GameField::showavailableCellsToMove(GameUnit *unit, bool show)
 {
-	if(unit != NULL)
+	if(unit != NULL && unit->playable())
 	{
 		Cell *unitCell = unit->getCell();
-		//if unit were moved earlier, clear the zone where it was
-		if(lastCell != NULL && lastCell != unitCell)
-		{
-			unitCell->showCellAsAvailable(!show);
-			lastCell->showCellAsAvailable(!show);
-			setAvailableCellsInRadius(lastCell, lastRadius, !show);
-		}
-		//paint new zone for unit
-		//and remember the cell unit was in, and radius in which cells will be painted as walkable
-		lastCell = unitCell;
-		lastRadius = unit->stepsLeftToMove();
 		setAvailableCellsInRadius(unitCell, unit->stepsLeftToMove(), show);
 	}
 }
@@ -158,7 +183,7 @@ void GameField::setAvailableCellsInRadius(Cell *cell, int radius, bool available
 				if(neighbour != NULL)
 				{
 					//if cell wasn't yet painted as walkable/!walkable, and cell cen be moved to
-					if(neighbour->isShowedAsAvailable() != available && neighbour->isWalkable() && neighbour != lastCell)
+					if(neighbour->isShowedAsAvailable() != available && neighbour->isWalkable())
 						neighbour->showCellAsAvailable(available);
 					//for every neighbour of the cell, check if it is in radius, and paint if needed
 					setAvailableCellsInRadius(neighbour, radius, available);
@@ -196,6 +221,16 @@ bool GameField::areCellsNeighbours(const Cell* parent, const Cell* target, int r
 		}
 		if(neighbour == target)
 			return true;
+	}
+	return false;
+}
+
+bool GameField::setUnitInVehicle(GameUnit *unit, GameUnit *vehicle)
+{
+	if(static_cast<Vehicle*>(vehicle)->setUnitIn(unit))
+	{
+		unit->setVisible(false);
+		return true;
 	}
 	return false;
 }
@@ -274,6 +309,7 @@ std::vector<Cell*> GameField::getCellsInRadius(const Cell* parent, int radius, b
 
 std::vector<Cell*> GameField::findPath(const Cell* _start, const Cell* _finish, int unitSize = 0)
 {
+	bool ignoreLast = false;
 	bool fin = false;
 	std::list<Cell*> opened;
 	std::list<Cell*> closed;
@@ -307,7 +343,14 @@ std::vector<Cell*> GameField::findPath(const Cell* _start, const Cell* _finish, 
 		}//if
 		opened.remove(current);
 		if(current == finish)
+		{
 			fin = true;
+			if(unitSize > 0)
+			{
+				finish = current;
+				continue;
+			}
+		}
 		closed.push_back(current);
 		current->setClosed(true);
 		for (int index = 0; index < 6; index++)
@@ -339,9 +382,15 @@ std::vector<Cell*> GameField::findPath(const Cell* _start, const Cell* _finish, 
 			}//switch
 			if (child == NULL)
 				continue;
+			if(child == finish && unitSize > 0)
+			{
+				ignoreLast = true;
+				fin = true;
+				finish = child;
+			}
 			current->setCheckedForRadius(true);
 			//check if cell is walkable and all cells around it are also walkable so vehicle could fit
-			if (child->isWalkable() && !child->isClosed() && cellsInRadiusAreWalkable(child, unitSize))
+			if (child->isWalkable() && !child->isClosed() && (cellsInRadiusAreWalkable(child, unitSize) || ignoreLast))
 			{
 				current->setCheckedForRadius(false);
 				if (!listContains(opened, child))
@@ -368,7 +417,10 @@ std::vector<Cell*> GameField::findPath(const Cell* _start, const Cell* _finish, 
 		std::cout << "Path was not found\n";
 	else
 	{
-		retrievePath(finish);
+		if(ignoreLast)
+			retrievePath(finish->getParent());
+		else
+			retrievePath(finish);
 		tmpPath = retrievedPath;
 		tmpPath.pop_back();
 	}

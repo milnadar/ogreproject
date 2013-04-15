@@ -12,18 +12,20 @@ class GameField
 public:
 	GameField(Ogre::SceneManager *mgr);
 	~GameField();
+	void printField();
 	void setupField();
 	void setUnitOnCell();
-	void removeUnitFromCell();
 	std::vector<Cell*> findPath(const Cell*, const Cell*, int unitSize);
 	void clearMap();
 	Cell* getCellByIndex(int , int) const;
 	bool setUnitOnCell(int, int, GameUnit*);
 	bool setUnitOnCell(Cell*, GameUnit*);
+	bool removeUnitFromCell(GameUnit *unit);
 	//bool setUnitOnCell(const Cell*, GameUnit*); ---?
 	void showavailableCellsToMove(GameUnit *unit, bool show);
 	void setAvailableCellsInRadius(Cell *cell, int radius, bool available);
 	bool areCellsNeighbours(const Cell* parent, const Cell* target, int radius) const;
+	bool setUnitInVehicle(GameUnit *unit, GameUnit *vehicle);
 private:
 	bool cellsInRadiusAreWalkable(const Cell* parent, int radius);
 	bool makeCellsInRadiusOccupied(const Cell* parent, int radius, bool occupied);
