@@ -63,12 +63,12 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>D:\Ogre\MyGUI_3.2.0\MyGUI_3.2.0\Platforms\Ogre\OgrePlatform\include;D:\Ogre\MyGUI_3.2.0\MyGUI_3.2.0\MyGUIEngine\include;D:\Ogre\Ogre\include\OIS;D:\Ogre\Ogre\include;D:\Ogre\Ogre\boost;D:\Ogre\Ogre\Samples\Common\include;C:\Users\User\Documents\Visual Studio 2010\Projects\OgreTest\OgreTest\Include;D:\Ogre\Ogre\include\OGRE;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>E:\Ogre\MyGUI_3.2.0\MyGUI_3.2.0\Platforms\Ogre\OgrePlatform\include;E:\Ogre\MyGUI_3.2.0\MyGUI_3.2.0\MyGUIEngine\include;E:\Ogre\Ogre\include\OIS;E:\Ogre\Ogre\include;E:\Ogre\Ogre\boost;E:\Ogre\Ogre\Samples\Common\include;E:\OgreTest\OgreTest\Include;E:\Ogre\Ogre\include\OGRE;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(OGRE_HOME)\lib\$(Configuration);$(OGRE_HOME)\boost\lib;D:\Ogre\MyGUI\lib\Release;D:\Ogre\MyGUI\lib\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>E:\Ogre\Ogre\lib\$(Configuration);E:\Ogre\Ogre\boost\lib;E:\Ogre\MyGUI\lib\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>OgreMain_d.lib;OIS_d.lib;MyGUIEngine_d.lib;MyGUI.OgrePlatform_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
