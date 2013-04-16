@@ -379,7 +379,7 @@ bool TutorialApplication::mousePressedInPlayState(const OIS::MouseEvent &arg,OIS
 						if(field->setUnitInVehicle(unit, pointedVehicle))
 						{
 							//if driver was set in vehicle remove it's figure from field
-							deselectCurrentUnit();
+							//deselectCurrentUnit();
 							field->removeUnitFromCell(unit);
 							selectUnit(pointedVehicle);
 						}

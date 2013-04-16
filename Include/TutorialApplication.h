@@ -59,9 +59,9 @@ protected:
 	void endTurn();
 	void attackScenario();
 	void performRangeAttack(GameUnit* attacker, GameUnit* target);
+	bool moveUnitToCell(GameUnit*, Cell*);
 private:
 	enum Players {player1 = 1, player2};
-	bool moveUnitToCell(GameUnit*, Cell*);
 	bool nextLocation();
 	//return whether unit hit the target
 	bool calculateRangeAttack(const UnitStats *attacker, const UnitStats *target);
