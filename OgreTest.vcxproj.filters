@@ -30,6 +30,12 @@
     <ClInclude Include="Include\TutorialApplication.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Include\UnitManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Net.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\BaseApplication.cpp">
@@ -42,6 +48,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Source\Cell.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\GameUnit.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\UnitManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -15,13 +15,17 @@
     <ClInclude Include="Include\Cell.h" />
     <ClInclude Include="Include\GameField.h" />
     <ClInclude Include="Include\GameUnit.h" />
+    <ClInclude Include="Include\Net.h" />
     <ClInclude Include="Include\TutorialApplication.h" />
+    <ClInclude Include="Include\UnitManager.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\BaseApplication.cpp" />
     <ClCompile Include="Source\Cell.cpp" />
     <ClCompile Include="Source\GameField.cpp" />
+    <ClCompile Include="Source\GameUnit.cpp" />
     <ClCompile Include="Source\TutorialApplication.cpp" />
+    <ClCompile Include="Source\UnitManager.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{69E535BA-3900-44BC-8684-BFBA8DC5935E}</ProjectGuid>
