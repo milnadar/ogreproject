@@ -29,6 +29,7 @@ GameUnit::GameUnit(int id, int player, Ogre::SceneManager *manager) : sceneManag
 	blocked = false;
 	alive = true;
 	unitName = "unit" + Ogre::StringConverter::toString(id);
+	unitID = id;
 	if(sceneManager)
 	{
 		unitEntity = sceneManager->createEntity(unitName, "robot.mesh");

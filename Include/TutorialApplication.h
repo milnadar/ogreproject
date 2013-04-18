@@ -60,6 +60,7 @@ protected:
 	void attackScenario();
 	void performRangeAttack(GameUnit* attacker, GameUnit* target);
 private:
+	void parseData(unsigned char* data);
 	enum Players {player1 = 1, player2};
 	bool moveUnitToCell(GameUnit*, Cell*);
 	bool nextLocation();

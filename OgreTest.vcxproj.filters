@@ -33,7 +33,7 @@
     <ClInclude Include="Include\UnitManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Net.h">
+    <ClInclude Include="Include\Network.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

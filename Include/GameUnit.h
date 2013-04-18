@@ -29,6 +29,7 @@ public:
 	void setUnitCell(Cell* newCell) {unitCell = newCell;};
 	Ogre::String getUnitName() const {return unitName;};
 	int getOwner() const {return owner;};
+	int getID() const {return unitID;};
 	void SetPosition(Ogre::Vector3);
 	Ogre::Vector3 const getPosition();
 	bool TranslateUnit(Ogre::Vector3&);
@@ -56,6 +57,7 @@ private:
 	Ogre::SceneNode *unitNode;
 	Ogre::String unitName;
 	Ogre::String idName;
+	int unitID;
 	Ogre::Vector3 unitDirection;
 	Ogre::AnimationState *animationState;
 	Cell* unitCell;

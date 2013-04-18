@@ -18,6 +18,9 @@ This source file is part of the
 #include "UnitManager.h"
 #include <cstdlib>
 
+
+bool isServer = false;
+
 //-------------------------------------------------------------------------------------
 TutorialApplication::TutorialApplication(void)
 {
@@ -73,6 +76,12 @@ void TutorialApplication::setupGUI()
 	button->eventMouseButtonClick = MyGUI::newDelegate(this, &TutorialApplication::buttonClicked);
 	button = gui->createWidget<MyGUI::Button>("Button", 10, 82, 300, 26, MyGUI::Align::Default, "Main", "changePlayerButton");
 	button->setCaption("Change player");
+	button->eventMouseButtonClick = MyGUI::newDelegate(this, &TutorialApplication::buttonClicked);
+	button = gui->createWidget<MyGUI::Button>("Button", 500, 10, 300, 26, MyGUI::Align::Default, "Main", "createServer");
+	button->setCaption("Create game");
+	button->eventMouseButtonClick = MyGUI::newDelegate(this, &TutorialApplication::buttonClicked);
+	button = gui->createWidget<MyGUI::Button>("Button", 500, 46, 300, 26, MyGUI::Align::Default, "Main", "connectToServer");
+	button->setCaption("Connect to server");
 	button->eventMouseButtonClick = MyGUI::newDelegate(this, &TutorialApplication::buttonClicked);
 	MyGUI::ListBox *list = gui->createWidget<MyGUI::ListBox>("ListBox", 10, 120, 300, 100, MyGUI::Align::Default, "Main", "unitList");
 	list->eventListSelectAccept += MyGUI::newDelegate(this, &TutorialApplication::itemAcceptedCallback);
@@ -156,6 +165,22 @@ void TutorialApplication::endTurn()
 	deselectCurrentUnit();
 	attacker = NULL;
 	target = NULL;
+}
+
+void TutorialApplication::parseData(unsigned char *data)
+{
+	std::cout << "data received\n";
+	int unitID = data[0];
+	Ogre::String name = "unit" + Ogre::StringConverter::toString(unitID);
+	GameUnit *unit = UnitManager::getSingletonPtr()->getUnitByName(name);
+	int i = data[1];
+	int j = data[2];
+	Cell *cell = field->getCellByIndex(i, j);
+	if(cell != NULL && unit != NULL)
+	{
+		currentUnit = unit;
+		moveUnitToCell(unit, cell);
+	}
 }
 
 bool TutorialApplication::frameRenderingQueued(const Ogre::FrameEvent &evt)
@@ -411,6 +436,14 @@ void TutorialApplication::buttonClicked(MyGUI::Widget* _widget)
 			UnitManager::getSingletonPtr()->resetUnitsStats();
 			endTurn();
 		}
+		else if(_widget->getName() == "createServer")
+		{
+			//
+		}
+		else if(_widget->getName() == "connectToServer")
+		{
+			//
+		}
 	}
 }
 
@@ -540,20 +573,20 @@ void TutorialApplication::consoleOutput(Ogre::String string)
 	}
 }
 
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+/*#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 #define WIN32_LEAN_AND_MEAN
 #include "windows.h"
-#endif
+#endif*/
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+/*#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
     INT WINAPI WinMain( HINSTANCE hInst, HINSTANCE, LPSTR strCmdLine, INT )
-#else
+#else*/
     int main(int argc, char *argv[])
-#endif
+//#endif
     {
         // Create application object
         TutorialApplication app;
@@ -561,12 +594,12 @@ extern "C" {
         try {
             app.go();
         } catch( Ogre::Exception& e ) {
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-            MessageBoxA( NULL, e.getFullDescription().c_str(), "An exception has occured!", MB_OK | MB_ICONERROR | MB_TASKMODAL);
-#else
+//#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+//            MessageBoxA( NULL, e.getFullDescription().c_str(), "An exception has occured!", MB_OK | MB_ICONERROR | MB_TASKMODAL);
+//#else
             std::cerr << "An exception has occured: " <<
                 e.getFullDescription().c_str() << std::endl;
-#endif
+//#endif
         }
 
         return 0;
