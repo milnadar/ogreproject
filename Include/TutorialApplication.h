@@ -21,6 +21,7 @@ This source file is part of the
 #include "MyGUI.h"
 #include "MyGUI_OgrePlatform.h"
 #include "GameField.h"
+#include "Network.h"
 
 class TutorialApplication : public BaseApplication
 {
@@ -60,7 +61,7 @@ protected:
 	void attackScenario();
 	void performRangeAttack(GameUnit* attacker, GameUnit* target);
 private:
-	void parseData(unsigned char* data);
+	void parseData(char* data, int size);
 	enum Players {player1 = 1, player2};
 	bool moveUnitToCell(GameUnit*, Cell*);
 	bool nextLocation();

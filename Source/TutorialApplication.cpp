@@ -121,6 +121,7 @@ void TutorialApplication::setupScene()
 	node->attachObject(entity);
 	node->setScale(50,50,50);
 	node->setPosition(20, 0, 51);
+	network.initialiseNetwork();
 }
 
 void TutorialApplication::changeGameState()
@@ -167,7 +168,7 @@ void TutorialApplication::endTurn()
 	target = NULL;
 }
 
-void TutorialApplication::parseData(unsigned char *data)
+void TutorialApplication::parseData(char *data, int size)
 {
 	std::cout << "data received\n";
 	int unitID = data[0];
@@ -185,6 +186,14 @@ void TutorialApplication::parseData(unsigned char *data)
 
 bool TutorialApplication::frameRenderingQueued(const Ogre::FrameEvent &evt)
 {
+	char buffer[256];
+	int result = 0;
+	if(isServer)
+		result = network.getDataFromClient(buffer, sizeof(buffer));
+	else
+		result = network.getDataFromServer(buffer, sizeof(buffer));
+	if(result > 0)
+		parseData(buffer, result);
 	UnitManager::getSingletonPtr()->addTime(evt.timeSinceLastFrame);
 	attackScenario();
 	if(direction == Ogre::Vector3::ZERO)
@@ -373,7 +382,17 @@ bool TutorialApplication::mousePressedInPlayState(const OIS::MouseEvent &arg,OIS
 				else if (itr->movable && itr->movable->getName().find("cell") == 0)
 				{
 					Cell* cell = Ogre::any_cast<Cell*>(itr->movable->getUserAny());
-					moveUnitToCell(currentUnit, cell);
+					char data[3];
+					data[0] = (char)currentUnit->getID();
+					data[1] = (char)cell->getI();
+					data[2] = (char)cell->getJ();
+					if(moveUnitToCell(currentUnit, cell))
+					{
+						if(isServer)
+							network.sendDataToClient(data);
+						else
+							network.sendDataToServer(data);
+					}
 					break;
 				}
 			}
@@ -438,11 +457,13 @@ void TutorialApplication::buttonClicked(MyGUI::Widget* _widget)
 		}
 		else if(_widget->getName() == "createServer")
 		{
-			//
+			isServer = true;
+			network.createServer();
 		}
 		else if(_widget->getName() == "connectToServer")
 		{
-			//
+			isServer = false;
+			network.connectToServer("25.175.166.86");
 		}
 	}
 }

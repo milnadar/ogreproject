@@ -15,7 +15,7 @@
     <ClInclude Include="Include\Cell.h" />
     <ClInclude Include="Include\GameField.h" />
     <ClInclude Include="Include\GameUnit.h" />
-    <ClInclude Include="Include\Net.h" />
+    <ClInclude Include="Include\Network.h" />
     <ClInclude Include="Include\TutorialApplication.h" />
     <ClInclude Include="Include\UnitManager.h" />
   </ItemGroup>
@@ -70,7 +70,7 @@
       <AdditionalIncludeDirectories>E:\Ogre\MyGUI_3.2.0\MyGUI_3.2.0\Platforms\Ogre\OgrePlatform\include;E:\Ogre\MyGUI_3.2.0\MyGUI_3.2.0\MyGUIEngine\include;E:\Ogre\Ogre\include\OIS;E:\Ogre\Ogre\include;E:\Ogre\Ogre\boost;E:\Ogre\Ogre\Samples\Common\include;E:\OgreTest\OgreTest\Include;E:\Ogre\Ogre\include\OGRE;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>E:\Ogre\Ogre\lib\$(Configuration);E:\Ogre\Ogre\boost\lib;E:\Ogre\MyGUI\lib\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>OgreMain_d.lib;OIS_d.lib;MyGUIEngine_d.lib;MyGUI.OgrePlatform_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
