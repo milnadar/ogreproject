@@ -5,20 +5,24 @@
 #include <stdio.h>
 #include <windows.h>
 #include <iostream>
+#include <queue>
 
 // Need to link with Ws2_32.lib
 #pragma comment(lib, "Ws2_32.lib")
+
+#define __FREE_QUEUE(ptr) while(!ptr.empty()) {char* data = ptr.front(); delete [] data; ptr.pop();};
 
 SOCKET server_socket = INVALID_SOCKET;
 
 SOCKET client_socket_in = INVALID_SOCKET;
 SOCKET client_socket_out = INVALID_SOCKET;
+bool NETWORK_CLIENT_CONNECTED = false;
+std::queue<char*>NETWORK_CLIENT_QUEUE;
 
 SOCKET server_socket_in = INVALID_SOCKET;
 SOCKET server_socket_out = INVALID_SOCKET;
-
-bool NETWORK_CLIENT_CONNECTED = false;
 bool NETWORK_SERVER_CONNECTED = false;
+std::queue<char*>NETWORK_SERVER_QUEUE;
 
 bool serverIsRunning = false;
 const short int serverPort = 27015;
@@ -27,12 +31,27 @@ DWORD WINAPI startClientLoop(LPVOID socket)
 {
 	std::cout << "Client loop started\n";
 	int num_bytes = SOCKET_ERROR;
-	char data[256];
+	char buffer[256];
 	do
 	{
-		num_bytes = recv(client_socket_in, data, sizeof(data), 0);
-		std::cout << "received data from server\n";
-	} while(num_bytes > 0);
+		num_bytes = recv(client_socket_in, buffer, sizeof(buffer), 0);
+		if(num_bytes > 0)
+		{
+			if(buffer[0] == 0)
+			{
+				//echo
+			}
+			else
+			{
+				char *data = new char[num_bytes + 1];
+				data[0] = (char)num_bytes;
+				::memcpy((LPVOID)&data[1], (LPVOID)buffer, num_bytes);
+				NETWORK_CLIENT_QUEUE.push(data);
+			}
+		}
+		else break;
+	}
+	while(num_bytes > 0);
 	std::cout << "Connection with server has been lost\n";
 	NETWORK_CLIENT_CONNECTED = false;
 	if(client_socket_in != INVALID_SOCKET)
@@ -45,6 +64,7 @@ DWORD WINAPI startClientLoop(LPVOID socket)
 		closesocket(client_socket_in);
 		client_socket_out = INVALID_SOCKET;
 	}
+	__FREE_QUEUE(NETWORK_CLIENT_QUEUE);
 	return 0;
 }
 
@@ -52,12 +72,27 @@ DWORD WINAPI startServerLoop(LPVOID socket)
 {
 	std::cout << "Server loop started\n";
 	int num_bytes = SOCKET_ERROR;
-	char data[256];
+	char buffer[256];
 	do
 	{
-		num_bytes = recv(server_socket_in, data, sizeof(data), 0);
-		std::cout << "received data from client\n";
-	} while(num_bytes > 0);
+		num_bytes = recv(server_socket_in, buffer, sizeof(buffer), 0);
+		if(num_bytes > 0)
+		{
+			if(buffer[0] == 0)
+			{
+				//
+			}
+			else
+			{
+				char* data = new char[num_bytes + 1];
+				data[0] = (char)num_bytes;
+				::memcpy((LPVOID)&data[1], (LPVOID)buffer, num_bytes);
+				NETWORK_SERVER_QUEUE.push(data);
+			}
+		}
+		else break;
+	}
+	while(num_bytes > 0);
 	std::cout << "Connection with client has been lost\n";
 	NETWORK_SERVER_CONNECTED = false;
 	if(server_socket_in != INVALID_SOCKET)
@@ -70,6 +105,7 @@ DWORD WINAPI startServerLoop(LPVOID socket)
 		closesocket(server_socket_in);
 		server_socket_out = INVALID_SOCKET;
 	}
+	__FREE_QUEUE(NETWORK_SERVER_QUEUE);
 	return 0;
 }
 
@@ -83,6 +119,10 @@ public:
 	bool connectToServer(char *stringAddress);
 	void stopServer();
 	void closeClient();
+	int getDataFromServer(char *data, int bufferSize);
+	int getDataFromClient(char *data, int bufferSize);
+	bool sendDataToServer(char *data, int dataSize = -1);
+	bool sendDataToClient(char *data, int dataSize = -1);
 	void shutDown();
 private:
 	SOCKET listen_socket;
@@ -247,6 +287,7 @@ void Network::stopServer()
 		closesocket(server_socket_out);
 		server_socket_out = INVALID_SOCKET;
 	}
+	__FREE_QUEUE(NETWORK_SERVER_QUEUE);
 	NETWORK_SERVER_CONNECTED = false;
 }
 
@@ -262,7 +303,66 @@ void Network::closeClient()
 		closesocket(client_socket_in);
 		client_socket_out = INVALID_SOCKET;
 	}
+	__FREE_QUEUE(NETWORK_CLIENT_QUEUE);
 	NETWORK_CLIENT_CONNECTED = false;
+}
+
+int Network::getDataFromClient(char *lpData, int bufferSize)
+{
+	if(NETWORK_SERVER_QUEUE.empty())
+		return 0;
+	char * data = NETWORK_SERVER_QUEUE.front();
+	if(data[0] > bufferSize)
+		return 0;
+	::memcpy((LPVOID)lpData, (LPVOID)&data[1], data[0]);
+	bufferSize = (int)data[0];
+	NETWORK_SERVER_QUEUE.pop();
+	delete [] data;
+	return bufferSize;
+}
+
+int Network::getDataFromServer(char *lpData, int bufferSize)
+{
+	if(NETWORK_CLIENT_QUEUE.empty())
+		return 0;
+	char * data = NETWORK_CLIENT_QUEUE.front();
+	if(bufferSize < data[0])
+		return 0;
+	::memcpy((LPVOID)lpData, (LPVOID)&data[1], data[0]);
+	bufferSize = (int) data[0];
+	NETWORK_CLIENT_QUEUE.pop();
+	delete [] data;
+	return bufferSize;
+}
+
+bool Network::sendDataToClient(char * lpData, int dataSize)
+{
+	if(server_socket_out == INVALID_SOCKET)
+		return false;
+	if(dataSize == -1)
+		dataSize = (int) ::strlen(lpData) + 1;
+	int result = send(server_socket_out, lpData, dataSize, 0);
+	if(result == SOCKET_ERROR)
+	{
+		std::cout << "couldn't send data\n";
+		return false;
+	}
+	return true;
+}
+
+bool Network::sendDataToServer(char * lpData, int dataSize)
+{
+	if(client_socket_out == INVALID_SOCKET)
+		return false;
+	if(dataSize == -1)
+		dataSize = (int) ::strlen(lpData) + 1;
+	int result = send(client_socket_out, lpData, dataSize, 0);
+	if(result == SOCKET_ERROR)
+	{
+		std::cout << "couldn't send data\n";
+		return false;
+	}
+	return true;
 }
 
 void Network::shutDown()

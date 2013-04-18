@@ -92,6 +92,7 @@ private:
 	GameState gameState;
 	Players currentPlayer;
 	Cell* finalCell;
+	Network network;
 };
 
 #endif // #ifndef __TutorialApplication_h_
