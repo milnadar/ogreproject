@@ -22,6 +22,29 @@ This source file is part of the
 #include "MyGUI_OgrePlatform.h"
 #include "GameField.h"
 #include "Network.h"
+#include "GameHelper.h"
+
+enum NetworkGameState {
+	GSEcho = 0,
+	GSSystemEvent,
+	GSGameEvent
+};
+
+enum NetworkSystemEvent {
+	SEInitialise,
+	SEGetUnitID,
+	SEGetRangeCount,
+	SEGetMeleCount
+};
+
+enum NetworkGameEvent {
+	GEEndTurn,
+	GEMoveUnit,
+	GEEnterVehicle,
+	GELeaveVehicle,
+	GERangeAttack,
+	GEMeleAttack
+};
 
 class TutorialApplication : public BaseApplication
 {
@@ -34,7 +57,7 @@ protected:
 		PLAYER_1 = 1 << 0,
 		PLAYER_2 = 1 << 1
 	};
-	enum GameState {PlayState = 0, EditState};
+	enum GameState {PlayState = 0, EditState, InitialState};
     virtual void createScene(void);
 	virtual void createFrameListener(void);
     //frame listener    
@@ -61,6 +84,7 @@ protected:
 	void attackScenario();
 	void performRangeAttack(GameUnit* attacker, GameUnit* target);
 private:
+	void setUnits(std::vector<int> ids);
 	void parseData(char* data, int size);
 	enum Players {player1 = 1, player2};
 	bool moveUnitToCell(GameUnit*, Cell*);
@@ -92,8 +116,10 @@ private:
 	std::deque<Ogre::Vector3> walkList;
 	GameState gameState;
 	Players currentPlayer;
+	Players activePlayer;
 	Cell* finalCell;
 	Network network;
+	GameHelper helper;
 };
 
 #endif // #ifndef __TutorialApplication_h_

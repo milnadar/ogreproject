@@ -12,7 +12,7 @@ class UnitManager : public Ogre::Singleton<UnitManager>
 public: 
 	UnitManager(Ogre::SceneManager*);
 	~UnitManager();
-	GameUnit* createUnit(int player);
+	GameUnit* createUnit(int player, int id);
 	bool createSquad(int player);
 	GameUnit* getUnitByName(Ogre::String name);
 	void resetUnitsStats();

@@ -14,6 +14,7 @@
     <ClInclude Include="Include\BaseApplication.h" />
     <ClInclude Include="Include\Cell.h" />
     <ClInclude Include="Include\GameField.h" />
+    <ClInclude Include="Include\GameHelper.h" />
     <ClInclude Include="Include\GameUnit.h" />
     <ClInclude Include="Include\Network.h" />
     <ClInclude Include="Include\TutorialApplication.h" />

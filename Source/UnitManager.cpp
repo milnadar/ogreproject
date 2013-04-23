@@ -14,12 +14,13 @@ UnitManager::~UnitManager()
 	//if(!units.empty()) //delete units
 }
 
-GameUnit* UnitManager::createUnit(int player)
+GameUnit* UnitManager::createUnit(int player, int id)
 {
 	GameUnit *unit = NULL;
 	if(sceneManager != NULL)
 	{
-		unit = new GameUnit(unitCounter++, player, sceneManager);
+		//unit = new GameUnit(unitCounter++, player, sceneManager);
+		unit = new GameUnit(id, player, sceneManager);
 		units.push_back(unit);
 	}
 	return unit;
@@ -27,9 +28,9 @@ GameUnit* UnitManager::createUnit(int player)
 
 bool UnitManager::createSquad(int player)
 {
-	for(int i = 0; i < 5; i++)
-		createUnit(player);
-	return true;
+	//for(int i = 0; i < 5; i++)
+		//createUnit(player);
+	return false;
 }
 
 GameUnit* UnitManager::getUnitByName(Ogre::String name)

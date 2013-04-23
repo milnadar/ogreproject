@@ -32,6 +32,7 @@ TutorialApplication::TutorialApplication(void)
 	interfaceBlocked = false;
 	gameState = GameState::PlayState;
 	currentPlayer = Players::player1;
+	activePlayer = Players::player1;
 }
 //-------------------------------------------------------------------------------------
 TutorialApplication::~TutorialApplication(void)
@@ -111,10 +112,10 @@ void TutorialApplication::setupScene()
 	field = new GameField(mSceneMgr);
 	field->setupField();
 	for(int i = 0; i < 5; i ++)
-	{
-		currentUnit = UnitManager::getSingletonPtr()->createUnit(currentPlayer);
+	/*{
+		currentUnit = UnitManager::getSingletonPtr()->createUnit(currentPlayer, helper.getID());
 		field->setUnitOnCell(field->getCellByIndex(i, i + 2), currentUnit);
-	}
+	}*/
 	updateUnitListForCurrentPlayer();
 	Ogre::Entity *entity = mSceneMgr->createEntity("tube", "car.mesh");
 	Ogre::SceneNode *node = mSceneMgr->getRootSceneNode()->createChildSceneNode("nodetube");
@@ -122,6 +123,22 @@ void TutorialApplication::setupScene()
 	node->setScale(50,50,50);
 	node->setPosition(20, 0, 51);
 	network.initialiseNetwork();
+}
+
+void TutorialApplication::setUnits(std::vector<int> ids)
+{
+	if(ids.size() < 10)
+		return;
+	for(int i = 0; i < 5; i++)
+	{
+		GameUnit *unit = UnitManager::getSingletonPtr()->createUnit(Players::player1, ids[i]);
+		field->setUnitOnCell(field->getCellByIndex(0, i), unit);
+	}
+	for(int i = 0; i < 5; i++)
+	{
+		GameUnit *unit = UnitManager::getSingletonPtr()->createUnit(Players::player2, ids[i+5]);
+		field->setUnitOnCell(field->getCellByIndex(9, i), unit);
+	}
 }
 
 void TutorialApplication::changeGameState()
@@ -163,24 +180,99 @@ void TutorialApplication::deselectCurrentUnit()
 
 void TutorialApplication::endTurn()
 {
+	if(activePlayer == Players::player1)
+		activePlayer = Players::player2;
+	else
+		activePlayer = Players::player1;
+	updateUnitListForCurrentPlayer();
+	UnitManager::getSingletonPtr()->resetUnitsStats();
 	deselectCurrentUnit();
 	attacker = NULL;
 	target = NULL;
+	MyGUI::Button *button = MyGUI::Gui::getInstancePtr()->findWidget<MyGUI::Button>("changePlayerButton");
+	button->setEnabled(activePlayer == currentPlayer);
 }
 
 void TutorialApplication::parseData(char *data, int size)
 {
-	std::cout << "data received\n";
-	int unitID = data[0];
-	Ogre::String name = "unit" + Ogre::StringConverter::toString(unitID);
-	GameUnit *unit = UnitManager::getSingletonPtr()->getUnitByName(name);
-	int i = data[1];
-	int j = data[2];
-	Cell *cell = field->getCellByIndex(i, j);
-	if(cell != NULL && unit != NULL)
-	{
-		currentUnit = unit;
-		moveUnitToCell(unit, cell);
+	std::cout << "data received. Num bytes = " << size << '\n';
+	switch(data[0]){
+	case NetworkGameState::GSEcho :
+		break;
+	case NetworkGameState::GSSystemEvent :
+		{
+			//receive 10 ids
+			if(data[1] == NetworkSystemEvent::SEInitialise)
+			{
+				if(isServer)
+				{
+					if(data[2] != 0)
+					{
+						std::cout << "Wrong\n " << (int)data[0] << ' ' << (int)data[1] << ' ' << (int)data[2] << ' ' << size << '\n';
+						break;
+					}
+					std::cout << "Client asked for ids\n";
+					//int ids[10];
+					std::vector<int>ids(10);
+					char dataToSend[13];
+					dataToSend[0] = (char)NetworkGameState::GSSystemEvent;
+					dataToSend[1] = (char)NetworkSystemEvent::SEInitialise;
+					dataToSend[2] = (char)0;
+					for(int i = 0; i < 10; i++)
+					{
+						ids[i] = helper.getID();
+						std::cout << ids[i] << ' ';
+						dataToSend[i+3] = (char)ids[i];
+					}
+					network.sendDataToClient(dataToSend, sizeof(dataToSend));
+					//create units on field
+					setUnits(ids);
+				}
+				else
+				{
+					if(data[2] != 0)
+					{
+						std::cout << "Wrong\n";
+						break;
+					}
+					std::vector<int>ids(10);
+					std::cout << "Server sent ids\n";
+					for(int i = 0; i < 10; i++)
+					{
+						std::cout << (int)data[i+3] << ' ';
+						ids[i] = (int)data[i+3];
+					}
+					setUnits(ids);
+					//create units on field
+				}
+			}
+			break;
+		}
+	case NetworkGameState::GSGameEvent :
+		{
+			std::cout << "GSGameEvent\n";
+			if(data[1] == NetworkGameEvent::GEMoveUnit)
+			{
+				std::cout << "GEMoveUnit\n";
+				std::cout << "Unit ID = " << (int)data[2] << '\n' << " to position " << (int)data[3] << ' ' << (int)data[4] << '\n';
+				int unitID = data[2];
+				Ogre::String name = "unit" + Ogre::StringConverter::toString(unitID);
+				GameUnit *unit = UnitManager::getSingletonPtr()->getUnitByName(name);
+				int i = data[3];
+				int j = data[4];
+				Cell *cell = field->getCellByIndex(i, j);
+				if(cell != NULL && unit != NULL)
+				{
+					currentUnit = unit;
+					moveUnitToCell(unit, cell);
+				}
+			}
+			else if(data[1] == NetworkGameEvent::GEEndTurn)
+			{
+				endTurn();
+			}
+			break;
+		}
 	}
 }
 
@@ -358,6 +450,8 @@ bool TutorialApplication::mousePressedInPlayState(const OIS::MouseEvent &arg,OIS
         Ogre::RaySceneQueryResult::iterator itr;
 		for(itr = result.begin(); itr != result.end(); itr++)
 		{
+			if(activePlayer != currentPlayer)
+				break;
 			if(currentUnit != NULL)
 			{
 				if(itr->movable && itr->movable->getName().find("unit") == 0)
@@ -382,16 +476,22 @@ bool TutorialApplication::mousePressedInPlayState(const OIS::MouseEvent &arg,OIS
 				else if (itr->movable && itr->movable->getName().find("cell") == 0)
 				{
 					Cell* cell = Ogre::any_cast<Cell*>(itr->movable->getUserAny());
-					char data[3];
-					data[0] = (char)currentUnit->getID();
-					data[1] = (char)cell->getI();
-					data[2] = (char)cell->getJ();
-					if(moveUnitToCell(currentUnit, cell))
+					bool result = false;
+					result = moveUnitToCell(currentUnit, cell);
+					if(result)
 					{
+						char data[5];
+						data[0] = (char)NetworkGameState::GSGameEvent;
+						data[1] = (char)NetworkGameEvent::GEMoveUnit;
+						data[2] = (char)currentUnit->getID();
+						data[3] = (char)cell->getI();
+						data[4] = (char)cell->getJ();
+						std::cout << "sending packet\n" << "GSGameEvent\n" << "GEMoveUnit\n";
+						std::cout << "Unit ID = " << (int)data[2] << '\n' << " to position " << (int)data[3] << ' ' << (int)data[4] << '\n';
 						if(isServer)
-							network.sendDataToClient(data);
+							network.sendDataToClient(data, sizeof(data));
 						else
-							network.sendDataToServer(data);
+							network.sendDataToServer(data, sizeof(data));
 					}
 					break;
 				}
@@ -433,7 +533,7 @@ void TutorialApplication::buttonClicked(MyGUI::Widget* _widget)
 		if(_widget->getName() == "createUnitButton")
 		{
 			if(gameState == GameState::EditState)
-				currentUnit = UnitManager::getSingletonPtr()->createUnit(currentPlayer);
+				currentUnit = UnitManager::getSingletonPtr()->createUnit(currentPlayer, helper.getID());
 		}
 		else if(_widget->getName() == "changeGameStateButton")
 		{
@@ -441,19 +541,14 @@ void TutorialApplication::buttonClicked(MyGUI::Widget* _widget)
 		}
 		else if(_widget->getName() == "changePlayerButton")
 		{
-			if(currentPlayer == Players::player1)
-			{
-				currentPlayer = Players::player2;
-				//mRaySceneQuery->setQueryMask(QueryMask::PLAYER_2);
-			}
-			else
-			{
-				currentPlayer = Players::player1;
-				//mRaySceneQuery->setQueryMask(QueryMask::PLAYER_1);
-			}
-			updateUnitListForCurrentPlayer();
-			UnitManager::getSingletonPtr()->resetUnitsStats();
 			endTurn();
+			char data[2];
+			data[0] = (char)NetworkGameState::GSGameEvent;
+			data[1] = (char)NetworkGameEvent::GEEndTurn;
+			if(isServer)
+				network.sendDataToClient(data, sizeof(data));
+			else
+				network.sendDataToServer(data, sizeof(data));
 		}
 		else if(_widget->getName() == "createServer")
 		{
@@ -463,7 +558,18 @@ void TutorialApplication::buttonClicked(MyGUI::Widget* _widget)
 		else if(_widget->getName() == "connectToServer")
 		{
 			isServer = false;
-			network.connectToServer("25.175.166.86");
+			bool result = network.connectToServer("25.175.166.86");
+			if(result)
+			{
+				char data[3];
+				data[0] = (char)NetworkGameState::GSSystemEvent;
+				data[1] = (char)NetworkSystemEvent::SEInitialise;
+				data[2] = (char)0;
+				std::cout << "sending initialise " << (int)data[0] << ' ' << (int)data[1] << ' ' << (int)data[2] << '\n';
+				network.sendDataToServer(data, sizeof(data));
+				currentPlayer = Players::player2;
+				endTurn();
+			}
 		}
 	}
 }
