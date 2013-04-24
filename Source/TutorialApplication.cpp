@@ -18,7 +18,6 @@ This source file is part of the
 #include "UnitManager.h"
 #include <cstdlib>
 
-
 bool isServer = false;
 
 //-------------------------------------------------------------------------------------
@@ -112,10 +111,10 @@ void TutorialApplication::setupScene()
 	field = new GameField(mSceneMgr);
 	field->setupField();
 	for(int i = 0; i < 5; i ++)
-	/*{
-		currentUnit = UnitManager::getSingletonPtr()->createUnit(currentPlayer, helper.getID());
-		field->setUnitOnCell(field->getCellByIndex(i, i + 2), currentUnit);
-	}*/
+	//{
+	//	currentUnit = UnitManager::getSingletonPtr()->createUnit(currentPlayer, helper.getID());
+	//	field->setUnitOnCell(field->getCellByIndex(i, i + 2), currentUnit);
+	//}
 	updateUnitListForCurrentPlayer();
 	Ogre::Entity *entity = mSceneMgr->createEntity("tube", "car.mesh");
 	Ogre::SceneNode *node = mSceneMgr->getRootSceneNode()->createChildSceneNode("nodetube");

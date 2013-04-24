@@ -15,6 +15,8 @@ This source file is part of the
 -----------------------------------------------------------------------------
 */
 #include "BaseApplication.h"
+#include "GameStateManager.h"
+#include "MainMenuState.h"
 
 //-------------------------------------------------------------------------------------
 BaseApplication::BaseApplication(void)
@@ -201,8 +203,15 @@ void BaseApplication::go(void)
 
     if (!setup())
         return;
-
-    mRoot->startRendering();
+	device_info info;
+	info.ogre = mRoot;
+	info.rwindow = mWindow;
+	info.mouse = mMouse;
+	info.keyboard = mKeyboard;
+	GameStateManager manager(&info);
+	MainMenuState::Create(&manager, "mainMenuState");
+	manager.start(manager.findByName("mainMenuState"));
+    //mRoot->startRendering();
 
     // clean up
     destroyScene();
