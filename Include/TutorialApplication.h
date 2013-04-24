@@ -83,14 +83,14 @@ protected:
 	void endTurn();
 	void attackScenario();
 	void performRangeAttack(GameUnit* attacker, GameUnit* target);
+	bool moveUnitToCell(GameUnit*, Cell*);
 private:
 	void setUnits(std::vector<int> ids);
 	void parseData(char* data, int size);
 	enum Players {player1 = 1, player2};
-	bool moveUnitToCell(GameUnit*, Cell*);
 	bool nextLocation();
 	//return whether unit hit the target
-	bool calculateRangeAttack(const UnitStats& attacker, const UnitStats& target);
+	bool calculateRangeAttack(const UnitStats *attacker, const UnitStats *target);
 	//returns units distance check result
 	int calculateDistance(int distance, int modifier);
 	//returns distance between two units
@@ -107,6 +107,10 @@ private:
 	//
 	GameUnit *attacker;
 	GameUnit *target;
+	//
+	GameUnit *ejectedUnit;
+	//set to true only when unit need to be ejected. 
+	bool needToEject;
 	Ogre::Real distance;
 	Ogre::Vector3 destination;
 	Ogre::Vector3 direction;

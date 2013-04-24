@@ -14,14 +14,23 @@ UnitManager::~UnitManager()
 	//if(!units.empty()) //delete units
 }
 
-GameUnit* UnitManager::createUnit(int player, int id)
+GameUnit* UnitManager::createUnit(int player, int type, int id)
 {
 	GameUnit *unit = NULL;
 	if(sceneManager != NULL)
 	{
-		//unit = new GameUnit(unitCounter++, player, sceneManager);
-		unit = new GameUnit(id, player, sceneManager);
-		units.push_back(unit);
+		if(type == 1)
+		{
+			TrooperStats stats(6, 3, 3, 3, 6, 4, 1);
+			unit = new Trooper(id, player, stats, sceneManager);
+			units.push_back(unit);
+		}
+		else
+		{
+			VehicleStats stats(6, 3, 3, 3, 6, 4, 1, 5);
+			unit = new Vehicle(id, player, stats, sceneManager);
+			units.push_back(unit);
+		}
 	}
 	return unit;
 }

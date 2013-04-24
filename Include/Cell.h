@@ -8,13 +8,15 @@
 class Cell
 {
 public:
+	enum CellState {EMPTY = 0, UNIT, REMOVABLE, OTHER};
 	Cell();
 	Cell(int iPos, int jPos, Ogre::String idName);
 	//bool operator= (const Cell*);
 	void setF(int value) {f = value;};
 	void setG(int value) {g = value;};
 	void setH(int value) {h = value;};
-	void setState(int value) {state = value;};
+	void setState(CellState value) {state = value;};
+	CellState getState() const {return state;};
 	void setParent(Cell *parent) {this->parent = parent;};
 	Cell* getParent() const {return parent;};
 	void setCellEntity(Ogre::Entity *entity) {cellEntity = entity;};
@@ -32,8 +34,6 @@ public:
 	void setCheckedForRadius(bool checked) {checkedForRadius = checked;};
 	void setUnit(GameUnit*);
 	void removeUnitFromCell();
-	void setVehicle(GameUnit*){};
-	void removeVehicleFromCell(){};
 	void clear();
 	void showCellAsAvailable(bool available);
 	bool isShowedAsAvailable() {return showedAsAvailable;};
@@ -46,7 +46,7 @@ private:
 	int f;
 	int g;
 	int h;
-	int state;
+	CellState state;
 	bool closed;
 	bool checkedForRadius;
 	bool showedAsAvailable;

@@ -27,11 +27,13 @@ TutorialApplication::TutorialApplication(void)
 	finalCell = NULL;
 	attacker = NULL;
 	target = NULL;
+	ejectedUnit = NULL;
 	gameConsole = NULL;
 	interfaceBlocked = false;
 	gameState = GameState::PlayState;
 	currentPlayer = Players::player1;
 	activePlayer = Players::player1;
+	needToEject = false;
 }
 //-------------------------------------------------------------------------------------
 TutorialApplication::~TutorialApplication(void)
@@ -83,6 +85,9 @@ void TutorialApplication::setupGUI()
 	button = gui->createWidget<MyGUI::Button>("Button", 500, 46, 300, 26, MyGUI::Align::Default, "Main", "connectToServer");
 	button->setCaption("Connect to server");
 	button->eventMouseButtonClick = MyGUI::newDelegate(this, &TutorialApplication::buttonClicked);
+	button = gui->createWidget<MyGUI::Button>("Button", 10, 122, 300, 26, MyGUI::Align::Default, "Main", "ejectPilot");
+	button->setCaption("Eject unit");
+	button->eventMouseButtonClick = MyGUI::newDelegate(this, &TutorialApplication::buttonClicked);
 	MyGUI::ListBox *list = gui->createWidget<MyGUI::ListBox>("ListBox", 10, 120, 300, 100, MyGUI::Align::Default, "Main", "unitList");
 	list->eventListSelectAccept += MyGUI::newDelegate(this, &TutorialApplication::itemAcceptedCallback);
 	list->setVisible(false);
@@ -110,17 +115,15 @@ void TutorialApplication::setupScene()
 	UnitManager *unitManager = new UnitManager(mSceneMgr);
 	field = new GameField(mSceneMgr);
 	field->setupField();
+	GameUnit *unit = NULL;
 	for(int i = 0; i < 5; i ++)
 	//{
-	//	currentUnit = UnitManager::getSingletonPtr()->createUnit(currentPlayer, helper.getID());
+	//	unit = UnitManager::getSingletonPtr()->createUnit(currentPlayer, helper.getID());
 	//	field->setUnitOnCell(field->getCellByIndex(i, i + 2), currentUnit);
 	//}
+	unit = UnitManager::getSingletonPtr()->createUnit(currentPlayer, 2);
+	field->setUnitOnCell(field->getCellByIndex(10, 5), unit);
 	updateUnitListForCurrentPlayer();
-	Ogre::Entity *entity = mSceneMgr->createEntity("tube", "car.mesh");
-	Ogre::SceneNode *node = mSceneMgr->getRootSceneNode()->createChildSceneNode("nodetube");
-	node->attachObject(entity);
-	node->setScale(50,50,50);
-	node->setPosition(20, 0, 51);
 	network.initialiseNetwork();
 }
 
@@ -158,21 +161,23 @@ void TutorialApplication::changeGameState()
 
 void TutorialApplication::selectUnit(GameUnit *unit)
 {
-	if(unit != NULL)
+	if(unit != NULL && unit->playable() && unit->getOwner() == currentPlayer)
 	{
+		if(currentUnit != NULL)
+			deselectCurrentUnit();
 		currentUnit = unit;
-		//currentUnit->getNode()->showBoundingBox(true);
+		currentUnit->getNode()->showBoundingBox(true);
 		consoleOutput("Selected unit " + currentUnit->getUnitName());
-		field->showavailableCellsToMove(currentUnit, true);
+		field->showAvailableCellsToMove(currentUnit, true);
 	}
 }
 
 void TutorialApplication::deselectCurrentUnit()
 {
-	if(currentUnit != NULL)
+	if(currentUnit != NULL && currentUnit->playable())
 	{
 		currentUnit->getNode()->showBoundingBox(false);
-		field->showavailableCellsToMove(currentUnit, false);
+		field->showAvailableCellsToMove(currentUnit, false);
 		currentUnit = NULL;
 	}
 }
@@ -310,7 +315,7 @@ bool TutorialApplication::frameRenderingQueued(const Ogre::FrameEvent &evt)
 			{
 				currentUnit->stopAnimation();
 				field->setUnitOnCell(finalCell, currentUnit);
-				field->showavailableCellsToMove(currentUnit, true);
+				field->showAvailableCellsToMove(currentUnit, true);
 				finalCell = NULL;
 			}
 			else
@@ -388,7 +393,7 @@ bool TutorialApplication::mousePressed(const OIS::MouseEvent &arg, OIS::MouseBut
 	{
 		mRmouseDown = true;
 		MyGUI::PointerManager::getInstance().setVisible(false);
-		deselectCurrentUnit();
+		//deselectCurrentUnit();
 	}
 	if(gameState == GameState::EditState)
 		result = mousePressedInEditState(arg, id);
@@ -414,16 +419,16 @@ bool TutorialApplication::mousePressedInEditState(const OIS::MouseEvent &arg,OIS
 				if (itr->movable && itr->movable->getName().find("cell") == 0)
 				{
 					Cell* cell = Ogre::any_cast<Cell*>(itr->movable->getUserAny());
-					field->setUnitOnCell(cell, currentUnit);
-					currentUnit = NULL;
+					if(field->setUnitOnCell(cell, currentUnit))
+						currentUnit = NULL;
 					break;
 				}
 			}
 			else
 			{
-				if (itr->movable && itr->movable->getName().find("unit") == 0)
+				if (itr->movable && itr->movable->getName().find("trooper") == 0)
 				{
-					selectUnit(Ogre::any_cast<GameUnit*>(itr->movable->getUserAny()));
+					selectUnit(Ogre::any_cast<Trooper*>(itr->movable->getUserAny()));
 					break;
 				}
 			}
@@ -451,25 +456,63 @@ bool TutorialApplication::mousePressedInPlayState(const OIS::MouseEvent &arg,OIS
 		{
 			if(activePlayer != currentPlayer)
 				break;
-			if(currentUnit != NULL)
+			if(currentUnit != NULL && currentUnit->playable())	
 			{
-				if(itr->movable && itr->movable->getName().find("unit") == 0)
+				//if unit has to be ejected from vehicle
+				if(needToEject && currentUnit->getType() == UnitType::VEHICLE)
 				{
-					GameUnit* pointedUnit = Ogre::any_cast<GameUnit*>(itr->movable->getUserAny());
+					if (itr->movable && itr->movable->getName().find("cell") == 0)
+					{
+						//if mouse was clicked in cell which is available to eject
+						Cell *cell = Ogre::any_cast<Cell*>(itr->movable->getUserAny());
+						if(cell->isShowedAsAvailable())
+						{
+							needToEject = false;
+							Vehicle *vehicle = static_cast<Vehicle*>(currentUnit);
+							GameUnit *unit = vehicle->ejectPilot();
+							unit->setVisible(true);
+							field->showAvailableCellsToEject(currentUnit, false);
+							field->setUnitOnCell(cell, unit);
+							selectUnit(unit);
+						}
+					}
+					return true;
+				}
+				if(itr->movable && itr->movable->getName().find("trooper") == 0)
+				{
+					GameUnit* pointedUnit = Ogre::any_cast<Trooper*>(itr->movable->getUserAny());
 					if(pointedUnit->getOwner() != currentPlayer)
 					{
 						if(currentUnit->canShoot())
 						{
-							GameUnit *targetUnit = Ogre::any_cast<GameUnit*>(itr->movable->getUserAny());
+							GameUnit *targetUnit = Ogre::any_cast<Trooper*>(itr->movable->getUserAny());
 							performRangeAttack(currentUnit, targetUnit);
 						}
 					}
 					else
 					{
 						//deselectCurrentUnit();
-						currentUnit = pointedUnit;
-						selectUnit(currentUnit);
+						//currentUnit = pointedUnit;
+						selectUnit(pointedUnit);
 					}
+					break;
+				}
+				else if(itr->movable && itr->movable->getName().find("vehicle") == 0)
+				{
+					Vehicle *pointedVehicle = Ogre::any_cast<Vehicle*>(itr->movable->getUserAny());
+					if(pointedVehicle->getOwner() == 0)
+					{
+						GameUnit *unit = currentUnit;
+						if(field->setUnitInVehicle(unit, pointedVehicle))
+						{
+							//if driver was set in vehicle remove it's figure from field
+							//deselectCurrentUnit();
+							field->removeUnitFromCell(unit);
+							selectUnit(pointedVehicle);
+						}
+					}
+					else if(pointedVehicle->getOwner() == currentPlayer)
+						selectUnit(pointedVehicle);
 					break;
 				}
 				else if (itr->movable && itr->movable->getName().find("cell") == 0)
@@ -497,9 +540,14 @@ bool TutorialApplication::mousePressedInPlayState(const OIS::MouseEvent &arg,OIS
 			}
 			else
 			{
-				if (itr->movable && itr->movable->getName().find("unit") == 0)
+				if (itr->movable && itr->movable->getName().find("trooper") == 0)
 				{
-					selectUnit(Ogre::any_cast<GameUnit*>(itr->movable->getUserAny()));
+					selectUnit(Ogre::any_cast<Trooper*>(itr->movable->getUserAny()));
+					break;
+				}
+				else if(itr->movable && itr->movable->getName().find("vehicle") == 0)
+				{
+					selectUnit(Ogre::any_cast<Vehicle*>(itr->movable->getUserAny()));
 					break;
 				}
 			}
@@ -507,7 +555,16 @@ bool TutorialApplication::mousePressedInPlayState(const OIS::MouseEvent &arg,OIS
 	}
 	else if(mRmouseDown)
 	{
-		//
+		if(needToEject)
+		{
+			needToEject = false;
+			field->showAvailableCellsToEject(currentUnit, false);
+			field->showAvailableCellsToMove(currentUnit, true);
+		}
+		else
+		{
+			deselectCurrentUnit();
+		}
 	}
 	return true;
 }
@@ -569,6 +626,19 @@ void TutorialApplication::buttonClicked(MyGUI::Widget* _widget)
 				currentPlayer = Players::player2;
 				endTurn();
 			}
+		else if(_widget->getName() == "ejectPilot")
+		{
+			if(currentUnit != NULL && currentUnit->getType() == UnitType::VEHICLE)
+			{
+				Vehicle *vehicle = static_cast<Vehicle*>(currentUnit);
+				if(vehicle->canEject())
+				{
+					needToEject = true;
+					field->showAvailableCellsToMove(currentUnit, false);
+					field->showAvailableCellsToEject(currentUnit, true);
+				}
+			}
+		}
 		}
 	}
 }
@@ -594,10 +664,18 @@ bool TutorialApplication::moveUnitToCell(GameUnit *unit, Cell* cell)
 {
 	std::vector<Cell*> path;
 	std::vector<Cell*>::iterator pathItr;
-	path = field->findPath(unit->getCell(), cell);
+	//when vehicle is selected, avoid clicking to cell that is occupied by this vehicle
+	if(unit->getType() == UnitType::VEHICLE)
+	{
+		if(field->areCellsNeighbours(unit->getCell(), cell, 0))
+			return false;
+	}
+	path = field->findPath(unit->getCell(), cell, unit->getType() - 1);
 	if(path.size() > unit->stepsLeftToMove() || path.empty())
 		return false;
-	finalCell = cell;
+	finalCell = path.front();
+	field->showAvailableCellsToMove(currentUnit, false);
+	field->removeUnitFromCell(currentUnit);
 	for(pathItr = path.begin(); pathItr != path.end(); pathItr++)
 		{walkList.push_front((*pathItr)->getEntity()->getParentSceneNode()->getPosition());
 	}
@@ -613,7 +691,7 @@ void TutorialApplication::performRangeAttack(GameUnit* attacker, GameUnit *targe
 		int distance = getDistance(attacker->getPosition(), target->getPosition());
 		consoleOutput("distance = " + Ogre::StringConverter::toString(distance));
 		//calculate distance check for attacker unit
-		int distanceResult = calculateDistance(attacker->getUnitStats().attackDistance, attacker->getUnitStats().distanceModifier);
+		int distanceResult = calculateDistance(attacker->getUnitStats()->attackDistance, attacker->getUnitStats()->distanceModifier);
 		if(distanceResult < distance)
 			return;
 		this->attacker = attacker;
@@ -621,18 +699,18 @@ void TutorialApplication::performRangeAttack(GameUnit* attacker, GameUnit *targe
 	}
 }
 
-bool TutorialApplication::calculateRangeAttack(const UnitStats &attacker, const UnitStats &target)
+bool TutorialApplication::calculateRangeAttack(const UnitStats *attacker, const UnitStats *target)
 {
-	int shot = rand() % attacker.attackPower + 1;
-	if(shot > target.armor)
+	int shot = rand() % attacker->attackPower + 1;
+	if(shot > target->armor)
 	{
-		Ogre::String log("Hit (" + Ogre::StringConverter::toString(shot) + " > " + Ogre::StringConverter::toString(target.armor) + ')');
+		Ogre::String log("Hit (" + Ogre::StringConverter::toString(shot) + " > " + Ogre::StringConverter::toString(target->armor) + ')');
 		consoleOutput(log);
 		return true;
 	}
 	else
 	{
-		Ogre::String log("Miss (" + Ogre::StringConverter::toString(shot) + " < " + Ogre::StringConverter::toString(target.armor)+ ')');
+		Ogre::String log("Miss (" + Ogre::StringConverter::toString(shot) + " < " + Ogre::StringConverter::toString(target->armor)+ ')');
 		consoleOutput(log);
 	}
 	return false;
