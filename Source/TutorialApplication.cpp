@@ -118,10 +118,10 @@ void TutorialApplication::setupScene()
 	GameUnit *unit = NULL;
 	for(int i = 0; i < 5; i ++)
 	//{
-	//	unit = UnitManager::getSingletonPtr()->createUnit(currentPlayer, helper.getID());
+	//	unit = UnitManager::getSingletonPtr()->createUnit(currentPlayer, 1, helper.getID());
 	//	field->setUnitOnCell(field->getCellByIndex(i, i + 2), currentUnit);
 	//}
-	unit = UnitManager::getSingletonPtr()->createUnit(currentPlayer, 2);
+	unit = UnitManager::getSingletonPtr()->createUnit(currentPlayer, 2, helper.getID());
 	field->setUnitOnCell(field->getCellByIndex(10, 5), unit);
 	updateUnitListForCurrentPlayer();
 	network.initialiseNetwork();
@@ -133,12 +133,12 @@ void TutorialApplication::setUnits(std::vector<int> ids)
 		return;
 	for(int i = 0; i < 5; i++)
 	{
-		GameUnit *unit = UnitManager::getSingletonPtr()->createUnit(Players::player1, ids[i]);
+		GameUnit *unit = UnitManager::getSingletonPtr()->createUnit(Players::player1, 1, ids[i]);
 		field->setUnitOnCell(field->getCellByIndex(0, i), unit);
 	}
 	for(int i = 0; i < 5; i++)
 	{
-		GameUnit *unit = UnitManager::getSingletonPtr()->createUnit(Players::player2, ids[i+5]);
+		GameUnit *unit = UnitManager::getSingletonPtr()->createUnit(Players::player2, 1, ids[i+5]);
 		field->setUnitOnCell(field->getCellByIndex(9, i), unit);
 	}
 }
@@ -589,7 +589,7 @@ void TutorialApplication::buttonClicked(MyGUI::Widget* _widget)
 		if(_widget->getName() == "createUnitButton")
 		{
 			if(gameState == GameState::EditState)
-				currentUnit = UnitManager::getSingletonPtr()->createUnit(currentPlayer, helper.getID());
+				currentUnit = UnitManager::getSingletonPtr()->createUnit(currentPlayer, 1, helper.getID());
 		}
 		else if(_widget->getName() == "changeGameStateButton")
 		{
