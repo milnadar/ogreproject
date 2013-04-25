@@ -208,10 +208,10 @@ void BaseApplication::go(void)
 	info.rwindow = mWindow;
 	info.mouse = mMouse;
 	info.keyboard = mKeyboard;
-	GameStateManager manager(&info);
-	MainMenuState::Create(&manager, "mainMenuState");
-	manager.start(manager.findByName("mainMenuState"));
-    //mRoot->startRendering();
+	//GameStateManager manager(&info);
+	//MainMenuState::Create(&manager, "mainMenuState");
+	//manager.start(manager.findByName("mainMenuState"));
+    mRoot->startRendering();
 
     // clean up
     destroyScene();

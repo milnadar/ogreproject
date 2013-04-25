@@ -13,12 +13,14 @@
   <ItemGroup>
     <ClInclude Include="Include\BaseApplication.h" />
     <ClInclude Include="Include\Cell.h" />
+    <ClInclude Include="Include\Game.h" />
     <ClInclude Include="Include\GameField.h" />
     <ClInclude Include="Include\GameHelper.h" />
     <ClInclude Include="Include\GameState.h" />
     <ClInclude Include="Include\GameStateManager.h" />
     <ClInclude Include="Include\GameUnit.h" />
     <ClInclude Include="Include\global.h" />
+    <ClInclude Include="Include\MainGameState.h" />
     <ClInclude Include="Include\MainMenuState.h" />
     <ClInclude Include="Include\Network.h" />
     <ClInclude Include="Include\TutorialApplication.h" />
@@ -27,9 +29,11 @@
   <ItemGroup>
     <ClCompile Include="Source\BaseApplication.cpp" />
     <ClCompile Include="Source\Cell.cpp" />
+    <ClCompile Include="Source\Game.cpp" />
     <ClCompile Include="Source\GameField.cpp" />
     <ClCompile Include="Source\GameStateManager.cpp" />
     <ClCompile Include="Source\GameUnit.cpp" />
+    <ClCompile Include="Source\MainGameState.cpp" />
     <ClCompile Include="Source\TutorialApplication.cpp" />
     <ClCompile Include="Source\UnitManager.cpp" />
   </ItemGroup>

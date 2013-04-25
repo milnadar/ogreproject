@@ -4,11 +4,11 @@
 class MainMenuState : public GameState, public OgreBites::SdkTrayListener
 {
 public:
-	MainMenuState();
 	static void Create(GameStateManager *parent, const Ogre::String &name);
 	void enter(void);
 	void exit(void);
 private:
+	MainMenuState();
 	//Ogre::FrameListener
 	virtual bool frameRenderingQueued(const Ogre::FrameEvent &evt);
 	// OIS::KeyListener

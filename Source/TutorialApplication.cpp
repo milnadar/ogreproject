@@ -116,7 +116,7 @@ void TutorialApplication::setupScene()
 	field = new GameField(mSceneMgr);
 	field->setupField();
 	GameUnit *unit = NULL;
-	for(int i = 0; i < 5; i ++)
+	//for(int i = 0; i < 5; i ++)
 	//{
 	//	unit = UnitManager::getSingletonPtr()->createUnit(currentPlayer, 1, helper.getID());
 	//	field->setUnitOnCell(field->getCellByIndex(i, i + 2), currentUnit);
@@ -124,7 +124,7 @@ void TutorialApplication::setupScene()
 	unit = UnitManager::getSingletonPtr()->createUnit(currentPlayer, 2, helper.getID());
 	field->setUnitOnCell(field->getCellByIndex(10, 5), unit);
 	updateUnitListForCurrentPlayer();
-	network.initialiseNetwork();
+	//network.initialiseNetwork();
 }
 
 void TutorialApplication::setUnits(std::vector<int> ids)
