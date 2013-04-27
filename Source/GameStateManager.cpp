@@ -61,12 +61,12 @@ void GameStateManager::start(GameState *state)
 {
     changeGameState(state);
  
-	mDevice->ogre->startRendering();
-    /*while (!mShutdown) 
+	//mDevice->ogre->startRendering();
+/*    while (!mShutdown) 
     {
  
-        mDevice->keyboard->capture();
-        mDevice->mouse->capture();
+        //mDevice->keyboard->capture();
+        //mDevice->mouse->capture();
  
         // run the message pump
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
@@ -74,8 +74,9 @@ void GameStateManager::start(GameState *state)
             MSG msg;
             while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) 
             {
-                 if (msg.message == WM_QUIT)
+                 if (msg.message == WM_QUIT){
                      Shutdown();
+				 }
                  else 
                  {
                      TranslateMessage(&msg);

@@ -47,6 +47,8 @@ public:
  
     /** This is a special case function to cause a shutdown. */
     void Shutdown(void);
+
+	virtual const device_info* getDeviceInfo() {return mDevice;}
  
 protected:
     /** This initializes a state to receive the events. */

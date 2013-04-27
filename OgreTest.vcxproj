@@ -20,6 +20,7 @@
     <ClInclude Include="Include\GameStateManager.h" />
     <ClInclude Include="Include\GameUnit.h" />
     <ClInclude Include="Include\global.h" />
+    <ClInclude Include="Include\InputManager.h" />
     <ClInclude Include="Include\main.h" />
     <ClInclude Include="Include\MainGameState.h" />
     <ClInclude Include="Include\MainMenuState.h" />
@@ -80,7 +81,7 @@
       <AdditionalIncludeDirectories>E:\Ogre\MyGUI_3.2.0\MyGUI_3.2.0\Platforms\Ogre\OgrePlatform\include;E:\Ogre\MyGUI_3.2.0\MyGUI_3.2.0\MyGUIEngine\include;E:\Ogre\Ogre\include\OIS;E:\Ogre\Ogre\include;E:\Ogre\Ogre\boost;E:\Ogre\Ogre\Samples\Common\include;E:\OgreTest\OgreTest\Include;E:\Ogre\Ogre\include\OGRE;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>E:\Ogre\Ogre\lib\$(Configuration);E:\Ogre\Ogre\boost\lib;E:\Ogre\MyGUI\lib\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>OgreMain_d.lib;OIS_d.lib;MyGUIEngine_d.lib;MyGUI.OgrePlatform_d.lib;%(AdditionalDependencies)</AdditionalDependencies>

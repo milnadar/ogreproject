@@ -3,14 +3,25 @@
 
 void MainGameState::Create(GameStateListener *parent, const Ogre::String& name)
 {
-	MainGameState *newState = new MainGameState();
+	MainGameState *newState = new MainGameState(parent->getDeviceInfo());
 	newState->parent = parent;
 	parent->ManageGameState(name,newState);
 }
 
-MainGameState::MainGameState()
+MainGameState::MainGameState(const device_info* device)
 {
-	game = 0;
+	if(device->ogre != 0)
+	{
+		sceneManager = device->ogre->getSceneManager("main");
+		network = new Network();
+		network->initialiseNetwork();
+		game = new GameManager(sceneManager, &helper);
+		mCamera = sceneManager->getCamera("PlayerCam");
+		mCamera->setPosition(0, 100, 0);
+		mCamera->lookAt(0, 0 ,0);
+		mCameraMan = new OgreBites::SdkCameraMan(mCamera);		
+	}
+	loop = true;
 	mLmouseDown = false;
 	mRmouseDown = false;
 	mRotateSpeed = .2;
@@ -18,6 +29,8 @@ MainGameState::MainGameState()
 
 MainGameState::~MainGameState()
 {
+	std::cout << "destructor called\n";
+	//mDevice = 0;
 	sceneManager = 0;
 	delete network;
 	network = 0;
@@ -25,27 +38,23 @@ MainGameState::~MainGameState()
 	game = 0;
 	delete mCameraMan;
 	mCameraMan = 0;
+	//mDevice = 0;
 }
 
 void MainGameState::enter(void)
 {
-	if(mDevice->ogre != 0)
-	{
-		sceneManager = mDevice->ogre->getSceneManager("main");
-		network = new Network();
-		network->initialiseNetwork();
-		game = new GameManager(sceneManager, &helper);
-		mCamera = sceneManager->getCamera("PlayerCam");
-		mCamera->setPosition(0, 100, 0);
-		mCamera->lookAt(0, 0 ,0);
-		mCameraMan = new OgreBites::SdkCameraMan(mCamera);
-		createScene();
-	}
+	createScene();
 }
 
 void MainGameState::exit(void)
 {
-	//
+	loop = false;
+	std::cout << "loop broke!\n";
+	delete game;
+	game = 0;
+	delete network;
+	network = 0;
+	sceneManager->clearScene();
 }
 
 void MainGameState::createScene(void)
@@ -109,19 +118,42 @@ void MainGameState::updateUnitListForCurrentPlayer()
 
 bool MainGameState::frameRenderingQueued(const Ogre::FrameEvent &evt)
 {
-	if(mCameraMan != 0)
+	std::cout << "game loop\n";
+	mCameraMan->frameRenderingQueued(evt);
+	if(mDevice)
 	{
-		mCameraMan->frameRenderingQueued(evt);
 		mDevice->keyboard->capture();
 		mDevice->mouse->capture();
 	}
 	if(game != 0)
-		return game->frameRenderingQueued(evt);
+		game->frameRenderingQueued(evt);
+	return loop;
+}
+
+bool MainGameState::frameStarted(const Ogre::FrameEvent &evt)
+{
+	std::cout<< "\nFrame Started\n";
+	return true;
+}
+
+bool MainGameState::frameEnded(const Ogre::FrameEvent &evt)
+{
+	std::cout<< "\nFrame Ended\n";
+	return true;
+}
+
+bool MainGameState::keyPressed(const OIS::KeyEvent &arg )
+{
+	if (arg.key == OIS::KC_ESCAPE)
+    {
+		parent->Shutdown();
+    }
 	return true;
 }
 
 bool MainGameState::mouseMoved(const OIS::MouseEvent &arg)
 {
+	std::cout << "mouse moved\n";
 	bool result = true;
 	MyGUI::InputManager::getInstance().injectMouseMove(arg.state.X.abs, arg.state.Y.abs, arg.state.Z.abs);
 	if(mRmouseDown)
@@ -164,6 +196,8 @@ bool MainGameState::mouseMovedInPlayState(const OIS::MouseEvent &arg)
 
 bool MainGameState::mousePressed(const OIS::MouseEvent &arg, OIS::MouseButtonID id)
 {
+	if(!loop)
+		return false;
 	mCameraMan->injectMouseDown(arg, id);
 	MyGUI::InputManager::getInstance().injectMousePress(arg.state.X.abs, arg.state.Y.abs, MyGUI::MouseButton::Enum(id));
 	bool result = true;

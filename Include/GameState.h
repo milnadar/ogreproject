@@ -10,13 +10,13 @@ class GameStateListener
 public:
     GameStateListener(void) {};
     virtual ~GameStateListener(void) {};
-    virtual void ManageGameState(Ogre::String state_name,GameState*state)=0;
-    virtual GameState *findByName(Ogre::String state_name)=0;
-    virtual void changeGameState(GameState *state)=0;
-    virtual bool pushGameState(GameState* state)=0;
-    virtual void popGameState()=0;
-    virtual void Shutdown()=0;
- 
+    virtual void ManageGameState(Ogre::String state_name,GameState*state) = 0;
+    virtual GameState *findByName(Ogre::String state_name) = 0;
+    virtual void changeGameState(GameState *state) = 0;
+    virtual bool pushGameState(GameState* state) = 0;
+    virtual void popGameState() = 0;
+    virtual void Shutdown() = 0;
+	virtual const device_info* getDeviceInfo() = 0;
 };
 
 class GameState: public Ogre::FrameListener, public OIS::KeyListener, public OIS::MouseListener

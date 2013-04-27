@@ -21,8 +21,10 @@ public:
 	//virtual void createFrameListener(void);
     //frame listener    
     virtual bool frameRenderingQueued(const Ogre::FrameEvent &evt);
+	virtual bool frameStarted(const Ogre::FrameEvent &evt);
+	virtual bool frameEnded(const Ogre::FrameEvent &evt);
 	// OIS::KeyListener
-	virtual bool keyPressed(const OIS::KeyEvent &arg ){return true;};
+	virtual bool keyPressed(const OIS::KeyEvent &arg );
 	virtual bool keyReleased( const OIS::KeyEvent &arg ){return true;};
     //OIS::MouseListener
     virtual bool mouseMoved(const OIS::MouseEvent &arg);
@@ -40,7 +42,7 @@ public:
 	void updateUnitListForCurrentPlayer();
 	void updateUnitInformation() {};
 private:
-	MainGameState();
+	MainGameState(const device_info* device);
 	~MainGameState();
 	Ogre::RaySceneQuery *mRaySceneQuery;// The ray scene query pointer
 	MyGUI::ButtonPtr button;
@@ -57,6 +59,7 @@ private:
 	GameUnit *currentUnit;
 	bool isServer;
 	OgreBites::SdkCameraMan *mCameraMan;
+	bool loop;
 };
 
 #endif

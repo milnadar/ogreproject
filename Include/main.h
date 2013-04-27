@@ -18,6 +18,8 @@
 #include <SdkTrays.h>
 #include <SdkCameraMan.h>
 
+#include "GameStateManager.h"
+
 class MainApplication : public Ogre::WindowEventListener, OgreBites::SdkTrayListener
 {
 public:
@@ -59,6 +61,8 @@ public:
     OIS::InputManager* mInputManager;
     OIS::Mouse*    mMouse;
     OIS::Keyboard* mKeyboard;
+	GameStateManager *gameStateManager;
+	device_info info;
 };
 
 #endif // #ifndef __BaseApplication_h_

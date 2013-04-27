@@ -1,5 +1,4 @@
 #include "main.h"
-#include "GameStateManager.h"
 #include "MainMenuState.h"
 #include "MainGameState.h"
 
@@ -18,15 +17,22 @@ MainApplication::MainApplication(void)
     mShutDown(false),
     mInputManager(0),
     mMouse(0),
-    mKeyboard(0)
+    mKeyboard(0),
+	gameStateManager(0)
 {
 }
 
 //-------------------------------------------------------------------------------------
 MainApplication::~MainApplication(void)
 {
+	std::cout << "main Destructor called\n";
     if (mTrayMgr) delete mTrayMgr;
     if (mCameraMan) delete mCameraMan;
+	if(gameStateManager) {
+		gameStateManager->Shutdown();
+		delete gameStateManager;
+		gameStateManager = 0;
+	}
 
     //Remove ourself as a Window listener
     Ogre::WindowEventUtilities::removeWindowEventListener(mWindow, this);
@@ -128,6 +134,7 @@ void MainApplication::createFrameListener(void)
 //-------------------------------------------------------------------------------------
 void MainApplication::destroyScene(void)
 {
+	gameStateManager->Shutdown();
 }
 //-------------------------------------------------------------------------------------
 void MainApplication::createViewports(void)
@@ -188,17 +195,16 @@ void MainApplication::go(void)
 
     if (!setup())
         return;
-	device_info info;
 	info.ogre = mRoot;
 	info.rwindow = mWindow;
 	info.mouse = mMouse;
 	info.keyboard = mKeyboard;
-	GameStateManager manager(&info);
+	gameStateManager = new GameStateManager(&info);
 	//MainMenuState::Create(&manager, "mainMenuState");
-	MainGameState::Create(&manager, "mainGameState");
-	manager.start(manager.findByName("mainGameState"));
+	MainGameState::Create(gameStateManager, "mainGameState");
+	gameStateManager->start(gameStateManager->findByName("mainGameState"));
 	//manager.start(manager.findByName("mainMenuState"));
-    //mRoot->startRendering();
+    mRoot->startRendering();
 
     // clean up
     destroyScene();
@@ -253,17 +259,30 @@ void MainApplication::windowClosed(Ogre::RenderWindow* rw)
     {
         if( mInputManager )
         {
-            mInputManager->destroyInputObject( mMouse );
-            mInputManager->destroyInputObject( mKeyboard );
+            //mInputManager->destroyInputObject( mMouse );
+           // mInputManager->destroyInputObject( mKeyboard );
 
-            OIS::InputManager::destroyInputSystem(mInputManager);
-            mInputManager = 0;
+            //OIS::InputManager::destroyInputSystem(mInputManager);
+            //mInputManager = 0;
         }
     }
 }
 
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+#define WIN32_LEAN_AND_MEAN
+#include "windows.h"
+#endif
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+    INT WINAPI WinMain( HINSTANCE hInst, HINSTANCE, LPSTR strCmdLine, INT )
+#else
+
 int main(int argc, char *argv[])
-//#endif
+#endif
     {
         // Create application object
         //TutorialApplication app;
@@ -272,13 +291,17 @@ int main(int argc, char *argv[])
         try {
             app.go();
         } catch( Ogre::Exception& e ) {
-//#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-//            MessageBoxA( NULL, e.getFullDescription().c_str(), "An exception has occured!", MB_OK | MB_ICONERROR | MB_TASKMODAL);
-//#else
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+            MessageBoxA( NULL, e.getFullDescription().c_str(), "An exception has occured!", MB_OK | MB_ICONERROR | MB_TASKMODAL);
+#else
             std::cerr << "An exception has occured: " <<
                 e.getFullDescription().c_str() << std::endl;
-//#endif
+#endif
         }
 
         return 0;
     }
+
+#ifdef __cplusplus
+}
+#endif

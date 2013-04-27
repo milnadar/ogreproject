@@ -57,6 +57,9 @@
     <ClInclude Include="Include\main.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Include\InputManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\BaseApplication.cpp">
