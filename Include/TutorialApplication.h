@@ -21,10 +21,10 @@ This source file is part of the
 #include "MyGUI.h"
 #include "MyGUI_OgrePlatform.h"
 #include "GameField.h"
-#include "Network.h"
+//#include "Network.h"
 #include "GameHelper.h"
-
-enum NetworkGameState {
+//class Network;
+/*enum NetworkGameState {
 	GSEcho = 0,
 	GSSystemEvent,
 	GSGameEvent
@@ -44,7 +44,7 @@ enum NetworkGameEvent {
 	GELeaveVehicle,
 	GERangeAttack,
 	GEMeleAttack
-};
+};*/
 
 class TutorialApplication : public BaseApplication
 {
@@ -102,13 +102,13 @@ private:
     float mRotateSpeed;
 	MyGUI::ButtonPtr button;
 	MyGUI::EditBox *gameConsole;
-	GameField *field;
-	GameUnit *currentUnit;
+	//GameField *field;
+	//GameUnit *currentUnit;
 	//
-	GameUnit *attacker;
-	GameUnit *target;
+	//GameUnit *attacker;
+	//GameUnit *target;
 	//
-	GameUnit *ejectedUnit;
+	//GameUnit *ejectedUnit;
 	//set to true only when unit need to be ejected. 
 	bool needToEject;
 	Ogre::Real distance;
@@ -118,12 +118,13 @@ private:
 	bool allowedToMove;
 	bool interfaceBlocked;
 	std::deque<Ogre::Vector3> walkList;
-	GameState gameState;
+	//GameState gameState;
 	Players currentPlayer;
 	Players activePlayer;
 	Cell* finalCell;
-	Network network;
-	GameHelper helper;
+	//Network *network;
+	//GameHelper helper;
+	bool isServer;
 };
 
 #endif // #ifndef __TutorialApplication_h_

@@ -1,6 +1,7 @@
 #include "MainGameState.h"
+#include "Network.h"
 
-void MainGameState::Create(GameStateListener *parent, Ogre::String& name)
+void MainGameState::Create(GameStateListener *parent, const Ogre::String& name)
 {
 	MainGameState *newState = new MainGameState();
 	newState->parent = parent;
@@ -9,35 +10,53 @@ void MainGameState::Create(GameStateListener *parent, Ogre::String& name)
 
 MainGameState::MainGameState()
 {
-	if(mDevice->ogre != 0)
-	{
-		sceneManager = mDevice->ogre->getSceneManager("main");
-		network.initialiseNetwork();
-		game = new GameManager(sceneManager, &network, &helper);
-	}
+	game = 0;
+	mLmouseDown = false;
+	mRmouseDown = false;
+	mRotateSpeed = .2;
 }
 
 MainGameState::~MainGameState()
 {
 	sceneManager = 0;
+	delete network;
+	network = 0;
+	delete game;
+	game = 0;
+	delete mCameraMan;
+	mCameraMan = 0;
 }
 
-void enter(void)
+void MainGameState::enter(void)
 {
-	//
+	if(mDevice->ogre != 0)
+	{
+		sceneManager = mDevice->ogre->getSceneManager("main");
+		network = new Network();
+		network->initialiseNetwork();
+		game = new GameManager(sceneManager, &helper);
+		mCamera = sceneManager->getCamera("PlayerCam");
+		mCamera->setPosition(0, 100, 0);
+		mCamera->lookAt(0, 0 ,0);
+		mCameraMan = new OgreBites::SdkCameraMan(mCamera);
+		createScene();
+	}
 }
 
-void exit(void)
+void MainGameState::exit(void)
 {
 	//
 }
 
 void MainGameState::createScene(void)
 {
-	//mCamera->setPosition(-80, 80, 30);
-	//mCamera->lookAt(80, 0, 30);
+	mCamera->setPosition(-80, 80, 30);
+	mCamera->lookAt(80, 0, 30);
 	setupGUI();
-	//setupScene();
+	Ogre::Entity *ent = sceneManager->createEntity("asd", "robot.mesh");
+	Ogre::SceneNode *node = sceneManager->getRootSceneNode()->createChildSceneNode("ggg");
+	node->attachObject(ent);
+	game->setupScene();
     // create your scene here :)
 }
 
@@ -90,7 +109,15 @@ void MainGameState::updateUnitListForCurrentPlayer()
 
 bool MainGameState::frameRenderingQueued(const Ogre::FrameEvent &evt)
 {
-	return game->frameRenderingQueued(evt);
+	if(mCameraMan != 0)
+	{
+		mCameraMan->frameRenderingQueued(evt);
+		mDevice->keyboard->capture();
+		mDevice->mouse->capture();
+	}
+	if(game != 0)
+		return game->frameRenderingQueued(evt);
+	return true;
 }
 
 bool MainGameState::mouseMoved(const OIS::MouseEvent &arg)
@@ -106,6 +133,7 @@ bool MainGameState::mouseMoved(const OIS::MouseEvent &arg)
 		result = mouseMovedInEditState(arg);
 	else if(game->getGameState() == State::PlayState)
 		result = mouseMovedInPlayState(arg);
+	//mCameraMan->injectMouseMove(arg);
 	return result;
 }
 
@@ -136,6 +164,7 @@ bool MainGameState::mouseMovedInPlayState(const OIS::MouseEvent &arg)
 
 bool MainGameState::mousePressed(const OIS::MouseEvent &arg, OIS::MouseButtonID id)
 {
+	mCameraMan->injectMouseDown(arg, id);
 	MyGUI::InputManager::getInstance().injectMousePress(arg.state.X.abs, arg.state.Y.abs, MyGUI::MouseButton::Enum(id));
 	bool result = true;
 	if(id == OIS::MB_Left)
@@ -286,9 +315,9 @@ bool MainGameState::mousePressedInPlayState(const OIS::MouseEvent &arg,OIS::Mous
 						std::cout << "sending packet\n" << "GSGameEvent\n" << "GEMoveUnit\n";
 						std::cout << "Unit ID = " << (int)data[2] << '\n' << " to position " << (int)data[3] << ' ' << (int)data[4] << '\n';
 						if(isServer)
-							network.sendDataToClient(data, sizeof(data));
+							network->sendDataToClient(data, sizeof(data));
 						else
-							network.sendDataToServer(data, sizeof(data));
+							network->sendDataToServer(data, sizeof(data));
 					}
 					break;
 				}
@@ -327,6 +356,7 @@ bool MainGameState::mousePressedInPlayState(const OIS::MouseEvent &arg,OIS::Mous
 
 bool MainGameState::mouseReleased(const OIS::MouseEvent &arg, OIS::MouseButtonID id)
 {
+	mCameraMan->injectMouseUp(arg, id);
 	MyGUI::InputManager::getInstance().injectMouseRelease(arg.state.X.abs, arg.state.Y.abs, MyGUI::MouseButton::Enum(id));
 		if(id == OIS::MB_Left)
 		mLmouseDown = false;
@@ -349,7 +379,7 @@ void MainGameState::buttonClicked(MyGUI::Widget* _widget)
 		}
 		else if(_widget->getName() == "changeGameStateButton")
 		{
-			changeGameState();
+			//changeGameState();
 		}
 		else if(_widget->getName() == "changePlayerButton")
 		{
@@ -358,19 +388,19 @@ void MainGameState::buttonClicked(MyGUI::Widget* _widget)
 			data[0] = (char)NetworkGameState::GSGameEvent;
 			data[1] = (char)NetworkGameEvent::GEEndTurn;
 			if(isServer)
-				network.sendDataToClient(data, sizeof(data));
+				network->sendDataToClient(data, sizeof(data));
 			else
-				network.sendDataToServer(data, sizeof(data));
+				network->sendDataToServer(data, sizeof(data));
 		}
 		else if(_widget->getName() == "createServer")
 		{
 			isServer = true;
-			network.createServer();
+			network->createServer();
 		}
 		else if(_widget->getName() == "connectToServer")
 		{
 			isServer = false;
-			bool result = network.connectToServer("25.175.166.86");
+			bool result = network->connectToServer("25.175.166.86");
 			if(result)
 			{
 				char data[3];
@@ -378,8 +408,8 @@ void MainGameState::buttonClicked(MyGUI::Widget* _widget)
 				data[1] = (char)NetworkSystemEvent::SEInitialise;
 				data[2] = (char)0;
 				std::cout << "sending initialise " << (int)data[0] << ' ' << (int)data[1] << ' ' << (int)data[2] << '\n';
-				network.sendDataToServer(data, sizeof(data));
-				currentPlayer = Players::player2;
+				network->sendDataToServer(data, sizeof(data));
+				//currentPlayer = GameManager::Players::player2;
 				game->endTurn();
 			}
 		else if(_widget->getName() == "ejectPilot")

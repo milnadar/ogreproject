@@ -3,7 +3,7 @@
 
 #include "GameField.h"
 
-class Network;
+//class Network;
 class GameHelper;
 
 enum NetworkGameState {
@@ -37,7 +37,7 @@ enum State {
 class GameManager
 {
 public:
-	GameManager(Ogre::SceneManager *manager, Network *network, GameHelper *helper);
+	GameManager(Ogre::SceneManager *manager, GameHelper *helper);
 	~GameManager();
 	enum Players {player1 = 1, player2};
 	void setupScene();
@@ -48,8 +48,8 @@ public:
 	void attackScenario();
 	void performRangeAttack(GameUnit* attacker, GameUnit* target);
 	bool moveUnitToCell(GameUnit*, Cell*);
-	bool setUnitInVehicle(GameUnit *unit, GameUnit *vehicle);
-	bool frameRenderingQueued(const Ogre::FrameEvent &evt) {}
+	bool setUnitInVehicle(GameUnit *unit, GameUnit *vehicle){return false;};
+	bool frameRenderingQueued(const Ogre::FrameEvent &evt);
 	const State& getGameState() const {return gameState;}
 	const Players& getCurrentPlayer() const {return currentPlayer;}
 	const Players& getActivePlayer() const {return activePlayer;}
@@ -84,7 +84,7 @@ private:
 	Players activePlayer;
 	Cell* finalCell;
 	GameHelper *helper;
-	Network *network;
+	//Network *network;
 	Ogre::SceneManager *sceneManager;
 };
 

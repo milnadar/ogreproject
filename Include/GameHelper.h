@@ -4,21 +4,11 @@
 class GameHelper
 {
 public:
-	GameHelper();
-	~GameHelper();
+	GameHelper(): id(0){};
+	~GameHelper() {id = 0;};
 	int getID() {return ++id;};
 private:
 	int id;
 };
-
-GameHelper::GameHelper() : id(0)
-{
-	//
-}
-
-GameHelper::~GameHelper()
-{
-	id = 0;
-}
 
 #endif

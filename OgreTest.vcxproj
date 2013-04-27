@@ -20,10 +20,10 @@
     <ClInclude Include="Include\GameStateManager.h" />
     <ClInclude Include="Include\GameUnit.h" />
     <ClInclude Include="Include\global.h" />
+    <ClInclude Include="Include\main.h" />
     <ClInclude Include="Include\MainGameState.h" />
     <ClInclude Include="Include\MainMenuState.h" />
     <ClInclude Include="Include\Network.h" />
-    <ClInclude Include="Include\TutorialApplication.h" />
     <ClInclude Include="Include\UnitManager.h" />
   </ItemGroup>
   <ItemGroup>
@@ -33,8 +33,8 @@
     <ClCompile Include="Source\GameField.cpp" />
     <ClCompile Include="Source\GameStateManager.cpp" />
     <ClCompile Include="Source\GameUnit.cpp" />
+    <ClCompile Include="Source\main.cpp" />
     <ClCompile Include="Source\MainGameState.cpp" />
-    <ClCompile Include="Source\TutorialApplication.cpp" />
     <ClCompile Include="Source\UnitManager.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

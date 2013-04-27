@@ -5,21 +5,24 @@
 #include "MyGUI_OgrePlatform.h"
 #include "GameHelper.h"
 #include "GameState.h"
-#include "Network.h"
+//#include "Network.h"
 #include "Game.h"
+#include <SdkCameraMan.h>
+
+class Network;
 
 class MainGameState : public GameState
 {
 public:
-	static void Create(GameStateListener *parent, Ogre::String& stateName);
+	static void Create(GameStateListener *parent, const Ogre::String& name);
 	virtual void enter(void);
 	virtual void exit(void);
     virtual void createScene(void);
-	virtual void createFrameListener(void);
+	//virtual void createFrameListener(void);
     //frame listener    
     virtual bool frameRenderingQueued(const Ogre::FrameEvent &evt);
 	// OIS::KeyListener
-	virtual bool keyPressed(const OIS::KeyEvent &arg );
+	virtual bool keyPressed(const OIS::KeyEvent &arg ){return true;};
 	virtual bool keyReleased( const OIS::KeyEvent &arg ){return true;};
     //OIS::MouseListener
     virtual bool mouseMoved(const OIS::MouseEvent &arg);
@@ -45,13 +48,15 @@ private:
     bool mLmouseDown, mRmouseDown;		// True if the mouse buttons are down
 	bool allowedToMove;
 	bool interfaceBlocked;
-	Network network;
+	Network *network;
 	GameHelper helper;
 	GameManager* game;
 	Ogre::SceneManager *sceneManager;
 	Ogre::Camera *mCamera;
 	float mRotateSpeed;
 	GameUnit *currentUnit;
+	bool isServer;
+	OgreBites::SdkCameraMan *mCameraMan;
 };
 
 #endif

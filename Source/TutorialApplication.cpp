@@ -15,15 +15,14 @@ This source file is part of the
 -----------------------------------------------------------------------------
 */
 #include "TutorialApplication.h"
-#include "UnitManager.h"
+//#include "UnitManager.h"
+//#include "Network.h"
 #include <cstdlib>
-
-bool isServer = false;
 
 //-------------------------------------------------------------------------------------
 TutorialApplication::TutorialApplication(void)
 {
-	currentUnit = NULL;
+	/*currentUnit = NULL;
 	finalCell = NULL;
 	attacker = NULL;
 	target = NULL;
@@ -33,7 +32,7 @@ TutorialApplication::TutorialApplication(void)
 	gameState = GameState::PlayState;
 	currentPlayer = Players::player1;
 	activePlayer = Players::player1;
-	needToEject = false;
+	needToEject = false;*/
 }
 //-------------------------------------------------------------------------------------
 TutorialApplication::~TutorialApplication(void)
@@ -45,27 +44,27 @@ TutorialApplication::~TutorialApplication(void)
 
 void TutorialApplication::createFrameListener()
 {
-	BaseApplication::createFrameListener();
+	/*BaseApplication::createFrameListener();
 	mRaySceneQuery = mSceneMgr->createRayQuery(Ogre::Ray());
     mLmouseDown = false;
 	mRmouseDown = false;
     mRotateSpeed = .2;
 	walkSpeed = 10.0f;
-	direction = Ogre::Vector3::ZERO;
+	direction = Ogre::Vector3::ZERO;*/
 }
 
 void TutorialApplication::createScene(void)
 {
-	mCamera->setPosition(-80, 80, 30);
-	mCamera->lookAt(80, 0, 30);
-	setupGUI();
-	setupScene();
+	//mCamera->setPosition(-80, 80, 30);
+	//mCamera->lookAt(80, 0, 30);
+	//setupGUI();
+	//setupScene();
     // create your scene here :)
 }
 
 void TutorialApplication::setupGUI()
 {
-	MyGUI::Gui *gui;
+	/*MyGUI::Gui *gui;
 	MyGUI::OgrePlatform *platform = new MyGUI::OgrePlatform();
 	platform->initialise(mWindow, mSceneMgr);
 	gui = new MyGUI::Gui;
@@ -94,12 +93,12 @@ void TutorialApplication::setupGUI()
 	gameConsole = gui->createWidget<MyGUI::EditBox>("EditBox",500, 780, 500, 150, MyGUI::Align::Default, "Main", "console");
 	gameConsole->setEditReadOnly(true);
 	gameConsole->setEditMultiLine(true);
-	gameConsole->setTextAlign(MyGUI::Align::Bottom | MyGUI::Align::Left);
+	gameConsole->setTextAlign(MyGUI::Align::Bottom | MyGUI::Align::Left);*/
 }
 
 void TutorialApplication::updateUnitListForCurrentPlayer()
 {
-	std::vector<Ogre::String> names = UnitManager::getSingletonPtr()->getPlayerUnits(currentPlayer);
+	/*std::vector<Ogre::String> names = UnitManager::getSingletonPtr()->getPlayerUnits(currentPlayer);
 	MyGUI::ListBox *listBox = MyGUI::Gui::getInstance().findWidget<MyGUI::ListBox>("unitList");
 	if(listBox)
 	{
@@ -107,12 +106,12 @@ void TutorialApplication::updateUnitListForCurrentPlayer()
 		std::vector<Ogre::String>::iterator itr;
 		for(itr = names.begin(); itr != names.end(); itr++)
 			listBox->addItem(*itr);
-	}
+	}*/
 }
 
 void TutorialApplication::setupScene()
 {
-	UnitManager *unitManager = new UnitManager(mSceneMgr);
+	/*UnitManager *unitManager = new UnitManager(mSceneMgr);
 	field = new GameField(mSceneMgr);
 	field->setupField();
 	GameUnit *unit = NULL;
@@ -124,12 +123,12 @@ void TutorialApplication::setupScene()
 	unit = UnitManager::getSingletonPtr()->createUnit(currentPlayer, 2, helper.getID());
 	field->setUnitOnCell(field->getCellByIndex(10, 5), unit);
 	updateUnitListForCurrentPlayer();
-	//network.initialiseNetwork();
+	//network.initialiseNetwork();*/
 }
 
 void TutorialApplication::setUnits(std::vector<int> ids)
 {
-	if(ids.size() < 10)
+	/*if(ids.size() < 10)
 		return;
 	for(int i = 0; i < 5; i++)
 	{
@@ -140,12 +139,12 @@ void TutorialApplication::setUnits(std::vector<int> ids)
 	{
 		GameUnit *unit = UnitManager::getSingletonPtr()->createUnit(Players::player2, 1, ids[i+5]);
 		field->setUnitOnCell(field->getCellByIndex(9, i), unit);
-	}
+	}*/
 }
 
 void TutorialApplication::changeGameState()
 {
-	MyGUI::ListBox *listBox = MyGUI::Gui::getInstance().findWidget<MyGUI::ListBox>("unitList");
+	/*MyGUI::ListBox *listBox = MyGUI::Gui::getInstance().findWidget<MyGUI::ListBox>("unitList");
 	if(gameState == GameState::PlayState)
 	{
 		gameState = GameState::EditState;
@@ -156,12 +155,12 @@ void TutorialApplication::changeGameState()
 		gameState = GameState::PlayState;
 		listBox->setVisible(false);
 	}
-	currentUnit = NULL;
+	currentUnit = NULL;*/
 }
 
 void TutorialApplication::selectUnit(GameUnit *unit)
 {
-	if(unit != NULL && unit->playable() && unit->getOwner() == currentPlayer)
+	/*if(unit != NULL && unit->playable() && unit->getOwner() == currentPlayer)
 	{
 		if(currentUnit != NULL)
 			deselectCurrentUnit();
@@ -169,22 +168,22 @@ void TutorialApplication::selectUnit(GameUnit *unit)
 		currentUnit->getNode()->showBoundingBox(true);
 		consoleOutput("Selected unit " + currentUnit->getUnitName());
 		field->showAvailableCellsToMove(currentUnit, true);
-	}
+	}*/
 }
 
 void TutorialApplication::deselectCurrentUnit()
 {
-	if(currentUnit != NULL && currentUnit->playable())
+	/*if(currentUnit != NULL && currentUnit->playable())
 	{
 		currentUnit->getNode()->showBoundingBox(false);
 		field->showAvailableCellsToMove(currentUnit, false);
 		currentUnit = NULL;
-	}
+	}*/
 }
 
 void TutorialApplication::endTurn()
 {
-	if(activePlayer == Players::player1)
+	/*if(activePlayer == Players::player1)
 		activePlayer = Players::player2;
 	else
 		activePlayer = Players::player1;
@@ -194,12 +193,12 @@ void TutorialApplication::endTurn()
 	attacker = NULL;
 	target = NULL;
 	MyGUI::Button *button = MyGUI::Gui::getInstancePtr()->findWidget<MyGUI::Button>("changePlayerButton");
-	button->setEnabled(activePlayer == currentPlayer);
+	button->setEnabled(activePlayer == currentPlayer);*/
 }
 
 void TutorialApplication::parseData(char *data, int size)
 {
-	std::cout << "data received. Num bytes = " << size << '\n';
+	/*std::cout << "data received. Num bytes = " << size << '\n';
 	switch(data[0]){
 	case NetworkGameState::GSEcho :
 		break;
@@ -228,7 +227,7 @@ void TutorialApplication::parseData(char *data, int size)
 						std::cout << ids[i] << ' ';
 						dataToSend[i+3] = (char)ids[i];
 					}
-					network.sendDataToClient(dataToSend, sizeof(dataToSend));
+					//network->sendDataToClient(dataToSend, sizeof(dataToSend));
 					//create units on field
 					setUnits(ids);
 				}
@@ -277,17 +276,17 @@ void TutorialApplication::parseData(char *data, int size)
 			}
 			break;
 		}
-	}
+	}*/
 }
 
 bool TutorialApplication::frameRenderingQueued(const Ogre::FrameEvent &evt)
 {
-	char buffer[256];
+	/*char buffer[256];
 	int result = 0;
 	if(isServer)
-		result = network.getDataFromClient(buffer, sizeof(buffer));
+		result = network->getDataFromClient(buffer, sizeof(buffer));
 	else
-		result = network.getDataFromServer(buffer, sizeof(buffer));
+		result = network->getDataFromServer(buffer, sizeof(buffer));
 	if(result > 0)
 		parseData(buffer, result);
 	UnitManager::getSingletonPtr()->addTime(evt.timeSinceLastFrame);
@@ -337,13 +336,13 @@ bool TutorialApplication::frameRenderingQueued(const Ogre::FrameEvent &evt)
 			currentUnit->TranslateUnit(direction * move);
 		}
 	}
-
+	*/
 	return BaseApplication::frameRenderingQueued(evt);
 }
 bool TutorialApplication::mouseMoved(const OIS::MouseEvent &arg)
 {
 	bool result = true;
-	MyGUI::InputManager::getInstance().injectMouseMove(arg.state.X.abs, arg.state.Y.abs, arg.state.Z.abs);
+	/*MyGUI::InputManager::getInstance().injectMouseMove(arg.state.X.abs, arg.state.Y.abs, arg.state.Z.abs);
 	if(mRmouseDown)
 	{
 		mCamera->yaw(Ogre::Degree(-arg.state.X.rel * mRotateSpeed));
@@ -352,13 +351,13 @@ bool TutorialApplication::mouseMoved(const OIS::MouseEvent &arg)
 	if(gameState == GameState::EditState)
 		result = mouseMovedInEditState(arg);
 	else if(gameState == GameState::PlayState)
-		result = mouseMovedInPlayState(arg);
+		result = mouseMovedInPlayState(arg);*/
 	return result;
 }
 
 bool TutorialApplication::mouseMovedInEditState(const OIS::MouseEvent &arg)
 {
-	if(currentUnit != NULL)
+	/*if(currentUnit != NULL)
 	{
 		MyGUI::IntPoint position = MyGUI::InputManager::getInstance().getMousePosition();
 		Ogre::Ray mouseRay = mCamera->getCameraToViewportRay(position.left/float(arg.state.width),position.top/float(arg.state.height));
@@ -372,7 +371,7 @@ bool TutorialApplication::mouseMovedInEditState(const OIS::MouseEvent &arg)
 			Ogre::Vector3 position = itr->movable->getParentSceneNode()->getPosition();
 			currentUnit->SetPosition(position);
 		}
-	}
+	}*/
 	return true;
 }
 
@@ -383,9 +382,9 @@ bool TutorialApplication::mouseMovedInPlayState(const OIS::MouseEvent &arg)
 
 bool TutorialApplication::mousePressed(const OIS::MouseEvent &arg, OIS::MouseButtonID id)
 {
-	MyGUI::InputManager::getInstance().injectMousePress(arg.state.X.abs, arg.state.Y.abs, MyGUI::MouseButton::Enum(id));
+	//MyGUI::InputManager::getInstance().injectMousePress(arg.state.X.abs, arg.state.Y.abs, MyGUI::MouseButton::Enum(id));
 	bool result = true;
-	if(id == OIS::MB_Left)
+	/*if(id == OIS::MB_Left)
 	{
 		mLmouseDown = true;
 	}
@@ -398,13 +397,13 @@ bool TutorialApplication::mousePressed(const OIS::MouseEvent &arg, OIS::MouseBut
 	if(gameState == GameState::EditState)
 		result = mousePressedInEditState(arg, id);
 	else if(gameState == GameState::PlayState)
-		result = mousePressedInPlayState(arg, id);
+		result = mousePressedInPlayState(arg, id);*/
 	return result;
 }
 
 bool TutorialApplication::mousePressedInEditState(const OIS::MouseEvent &arg,OIS::MouseButtonID id)
 {
-	if(mLmouseDown)
+	/*if(mLmouseDown)
 	{
 		MyGUI::IntPoint position = MyGUI::InputManager::getInstance().getMousePosition();
 		Ogre::Ray mouseRay = mCamera->getCameraToViewportRay(position.left/float(arg.state.width),position.top/float(arg.state.height));
@@ -437,13 +436,13 @@ bool TutorialApplication::mousePressedInEditState(const OIS::MouseEvent &arg,OIS
 	else if(mRmouseDown)
 	{
 		//
-	}
+	}*/
 	return true;
 }
 
 bool TutorialApplication::mousePressedInPlayState(const OIS::MouseEvent &arg,OIS::MouseButtonID id)
 {
-	if(mLmouseDown)
+	/*if(mLmouseDown)
 	{
 		MyGUI::IntPoint position = MyGUI::InputManager::getInstance().getMousePosition();
 		Ogre::Ray mouseRay = mCamera->getCameraToViewportRay(position.left/float(arg.state.width),position.top/float(arg.state.height));
@@ -531,9 +530,9 @@ bool TutorialApplication::mousePressedInPlayState(const OIS::MouseEvent &arg,OIS
 						std::cout << "sending packet\n" << "GSGameEvent\n" << "GEMoveUnit\n";
 						std::cout << "Unit ID = " << (int)data[2] << '\n' << " to position " << (int)data[3] << ' ' << (int)data[4] << '\n';
 						if(isServer)
-							network.sendDataToClient(data, sizeof(data));
+							network->sendDataToClient(data, sizeof(data));
 						else
-							network.sendDataToServer(data, sizeof(data));
+							network->sendDataToServer(data, sizeof(data));
 					}
 					break;
 				}
@@ -565,26 +564,26 @@ bool TutorialApplication::mousePressedInPlayState(const OIS::MouseEvent &arg,OIS
 		{
 			deselectCurrentUnit();
 		}
-	}
+	}*/
 	return true;
 }
 
 bool TutorialApplication::mouseReleased(const OIS::MouseEvent &arg, OIS::MouseButtonID id)
 {
-	MyGUI::InputManager::getInstance().injectMouseRelease(arg.state.X.abs, arg.state.Y.abs, MyGUI::MouseButton::Enum(id));
+	/*MyGUI::InputManager::getInstance().injectMouseRelease(arg.state.X.abs, arg.state.Y.abs, MyGUI::MouseButton::Enum(id));
 		if(id == OIS::MB_Left)
 		mLmouseDown = false;
 	else if(id == OIS::MB_Right)
 	{
 		mRmouseDown = false;
 		MyGUI::PointerManager::getInstance().setVisible(true);
-	}
+	}*/
 	return true;
 }
 
 void TutorialApplication::buttonClicked(MyGUI::Widget* _widget)
 {
-	if(_widget != NULL)
+	/*if(_widget != NULL)
 	{
 		if(_widget->getName() == "createUnitButton")
 		{
@@ -602,19 +601,19 @@ void TutorialApplication::buttonClicked(MyGUI::Widget* _widget)
 			data[0] = (char)NetworkGameState::GSGameEvent;
 			data[1] = (char)NetworkGameEvent::GEEndTurn;
 			if(isServer)
-				network.sendDataToClient(data, sizeof(data));
+				network->sendDataToClient(data, sizeof(data));
 			else
-				network.sendDataToServer(data, sizeof(data));
+				network->sendDataToServer(data, sizeof(data));
 		}
 		else if(_widget->getName() == "createServer")
 		{
 			isServer = true;
-			network.createServer();
+			network->createServer();
 		}
 		else if(_widget->getName() == "connectToServer")
 		{
 			isServer = false;
-			bool result = network.connectToServer("25.175.166.86");
+			bool result = network->connectToServer("25.175.166.86");
 			if(result)
 			{
 				char data[3];
@@ -622,7 +621,7 @@ void TutorialApplication::buttonClicked(MyGUI::Widget* _widget)
 				data[1] = (char)NetworkSystemEvent::SEInitialise;
 				data[2] = (char)0;
 				std::cout << "sending initialise " << (int)data[0] << ' ' << (int)data[1] << ' ' << (int)data[2] << '\n';
-				network.sendDataToServer(data, sizeof(data));
+				network->sendDataToServer(data, sizeof(data));
 				currentPlayer = Players::player2;
 				endTurn();
 			}
@@ -640,29 +639,29 @@ void TutorialApplication::buttonClicked(MyGUI::Widget* _widget)
 			}
 		}
 		}
-	}
+	}*/
 }
 
 void TutorialApplication::itemAcceptedCallback(MyGUI::ListBox* _sender, size_t _index)
 {
-	Ogre::String str = _sender->getItem(_index);
-	currentUnit = UnitManager::getSingletonPtr()->getUnitByName(str);
+	//Ogre::String str = _sender->getItem(_index);
+	//currentUnit = UnitManager::getSingletonPtr()->getUnitByName(str);
 }
 
 bool TutorialApplication::nextLocation()
 {
-	if(walkList.empty())
+	/*if(walkList.empty())
 		return false;
 	destination = walkList.front();
 	walkList.pop_front();
 	direction = destination - currentUnit->getPosition();
-	distance = direction.normalise();
+	distance = direction.normalise();*/
 	return true;
 }
 
 bool TutorialApplication::moveUnitToCell(GameUnit *unit, Cell* cell)
 {
-	std::vector<Cell*> path;
+	/*std::vector<Cell*> path;
 	std::vector<Cell*>::iterator pathItr;
 	//when vehicle is selected, avoid clicking to cell that is occupied by this vehicle
 	if(unit->getType() == UnitType::VEHICLE)
@@ -679,13 +678,13 @@ bool TutorialApplication::moveUnitToCell(GameUnit *unit, Cell* cell)
 	for(pathItr = path.begin(); pathItr != path.end(); pathItr++)
 		{walkList.push_front((*pathItr)->getEntity()->getParentSceneNode()->getPosition());
 	}
-	consoleOutput("Unit " + unit->getUnitName() + " moved to cell " + cell->getName());
+	consoleOutput("Unit " + unit->getUnitName() + " moved to cell " + cell->getName());*/
 	return true;
 }
 
 void TutorialApplication::performRangeAttack(GameUnit* attacker, GameUnit *target)
 {
-	if(attacker != target)
+	/*if(attacker != target)
 	{
 		//calculate distance between two units
 		int distance = getDistance(attacker->getPosition(), target->getPosition());
@@ -696,12 +695,12 @@ void TutorialApplication::performRangeAttack(GameUnit* attacker, GameUnit *targe
 			return;
 		this->attacker = attacker;
 		this->target = target;
-	}
+	}*/
 }
 
 bool TutorialApplication::calculateRangeAttack(const UnitStats *attacker, const UnitStats *target)
 {
-	int shot = rand() % attacker->attackPower + 1;
+	/*int shot = rand() % attacker->attackPower + 1;
 	if(shot > target->armor)
 	{
 		Ogre::String log("Hit (" + Ogre::StringConverter::toString(shot) + " > " + Ogre::StringConverter::toString(target->armor) + ')');
@@ -712,16 +711,16 @@ bool TutorialApplication::calculateRangeAttack(const UnitStats *attacker, const 
 	{
 		Ogre::String log("Miss (" + Ogre::StringConverter::toString(shot) + " < " + Ogre::StringConverter::toString(target->armor)+ ')');
 		consoleOutput(log);
-	}
+	}*/
 	return false;
 }
 
 int TutorialApplication::calculateDistance(int distance, int modifier)
 {
 	int value = rand() % distance;
-	value += modifier;
+	/*value += modifier;
 	consoleOutput("Distance check result: " + Ogre::StringConverter::toString(value) + " + " + Ogre::StringConverter::toString(modifier) +
-		+ " = " + Ogre::StringConverter::toString(value + modifier));
+		+ " = " + Ogre::StringConverter::toString(value + modifier));*/
 	return value;
 }
 
@@ -734,14 +733,14 @@ int TutorialApplication::getDistance(const GameUnit *attacker, const GameUnit *t
 
 int TutorialApplication::getDistance(const Ogre::Vector3 &position1, const Ogre::Vector3 &position2)
 {
-	Ogre::Vector3 vector = position2 - position1;
-	int distance = std::floor((vector.normalise() / 5) + 0.5);
+	//Ogre::Vector3 vector = position2 - position1;
+	int distance;// = std::floor((vector.normalise() / 5) + 0.5);
 	return distance;
 }
 
 void TutorialApplication::attackScenario()
 {
-	if(attacker != NULL && target != NULL)
+	/*if(attacker != NULL && target != NULL)
 	{
 		if(attacker->hasMoreShots())
 		{
@@ -766,15 +765,15 @@ void TutorialApplication::attackScenario()
 	{
 		target->startAnimation(GameUnit::AnimationList::DEATH_ANIMATION, false);
 		target = NULL;
-	}
+	}*/
 }
 
 void TutorialApplication::consoleOutput(Ogre::String string)
 {
-	if(gameConsole)
+	/*if(gameConsole)
 	{
 		gameConsole->addText(string + '\n');
-	}
+	}*/
 }
 
 /*#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32

@@ -1,10 +1,13 @@
+#ifndef _MainMenuState_h_
+#define _MainMenuState_h_
+
 #include "GameState.h"
 #include <SdkTrays.h>
 
 class MainMenuState : public GameState, public OgreBites::SdkTrayListener
 {
 public:
-	static void Create(GameStateManager *parent, const Ogre::String &name);
+	static void Create(GameStateListener *parent, const Ogre::String &name);
 	void enter(void);
 	void exit(void);
 private:
@@ -38,7 +41,7 @@ void MainMenuState::exit(void)
 	trayManager = 0;
 }
 
-void MainMenuState::Create(GameStateManager *parent, const Ogre::String &name)
+void MainMenuState::Create(GameStateListener *parent, const Ogre::String &name)
 {
 	MainMenuState *newState = new MainMenuState();
 	newState->parent = parent;
@@ -65,3 +68,5 @@ bool MainMenuState::mouseMoved(const OIS::MouseEvent &arg)
 	if(trayManager->injectMouseMove(arg)) return true;;
 	return true;
 }
+
+#endif

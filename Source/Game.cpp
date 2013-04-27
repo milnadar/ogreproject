@@ -1,13 +1,24 @@
 #include "Game.h"
 #include "UnitManager.h"
-#include "Network.h"
+//#include "Network.h"
 #include "GameHelper.h"
 
-GameManager::GameManager(Ogre::SceneManager *manager, Network *network, GameHelper *helper)
+//bool isServer = false;
+
+GameManager::GameManager(Ogre::SceneManager *manager, GameHelper *helper)
 {
 	this->sceneManager = manager;
-	this->network = network;
+	//this->network = network;
 	this->helper = helper;
+	attacker = NULL;
+	target = NULL;
+	walkSpeed = 10.0f;
+	direction = Ogre::Vector3::ZERO;
+}
+
+GameManager::~GameManager()
+{
+	//
 }
 
 void GameManager::setupScene()
@@ -46,14 +57,14 @@ void GameManager::setUnits(std::vector<int> ids)
 void GameManager::changeGameState()
 {
 	//MyGUI::ListBox *listBox = MyGUI::Gui::getInstance().findWidget<MyGUI::ListBox>("unitList");
-	if(gameState == GameState::PlayState)
+	if(gameState == State::PlayState)
 	{
-		gameState = GameState::EditState;
+		gameState = State::EditState;
 		//listBox->setVisible(true);
 	}
 	else
 	{
-		gameState = GameState::PlayState;
+		gameState = State::PlayState;
 		//listBox->setVisible(false);
 	}
 	currentUnit = NULL;
@@ -61,14 +72,14 @@ void GameManager::changeGameState()
 
 bool GameManager::frameRenderingQueued(const Ogre::FrameEvent &evt)
 {
-		char buffer[256];
+	/*char buffer[256];
 	int result = 0;
 	if(isServer)
 		result = network->getDataFromClient(buffer, sizeof(buffer));
 	else
 		result = network->getDataFromServer(buffer, sizeof(buffer));
 	if(result > 0)
-		parseData(buffer, result);
+		parseData(buffer, result);*/
 	UnitManager::getSingletonPtr()->addTime(evt.timeSinceLastFrame);
 	attackScenario();
 	if(direction == Ogre::Vector3::ZERO)
@@ -159,7 +170,7 @@ void GameManager::endTurn()
 
 void GameManager::parseData(char *data, int size)
 {
-	std::cout << "data received. Num bytes = " << size << '\n';
+	/*std::cout << "data received. Num bytes = " << size << '\n';
 	switch(data[0]){
 	case NetworkGameState::GSEcho :
 		break;
@@ -237,7 +248,7 @@ void GameManager::parseData(char *data, int size)
 			}
 			break;
 		}
-	}
+	}*/
 }
 
 bool GameManager::nextLocation()

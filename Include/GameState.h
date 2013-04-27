@@ -1,5 +1,5 @@
-#ifndef __gamestate_h__
-#define __gamestate_h__
+#ifndef __GameState_h__
+#define __GameState_h__
  
 #include "global.h"
  
