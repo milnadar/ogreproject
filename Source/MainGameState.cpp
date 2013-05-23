@@ -62,9 +62,6 @@ void MainGameState::createScene(void)
 	mCamera->setPosition(-80, 80, 30);
 	mCamera->lookAt(80, 0, 30);
 	setupGUI();
-	Ogre::Entity *ent = sceneManager->createEntity("asd", "robot.mesh");
-	Ogre::SceneNode *node = sceneManager->getRootSceneNode()->createChildSceneNode("ggg");
-	node->attachObject(ent);
 	game->setupScene();
     // create your scene here :)
 }
@@ -122,8 +119,9 @@ bool MainGameState::frameRenderingQueued(const Ogre::FrameEvent &evt)
 	mCameraMan->frameRenderingQueued(evt);
 	if(mDevice)
 	{
-		mDevice->keyboard->capture();
-		mDevice->mouse->capture();
+		mDevice->manager->capture();
+		//mDevice->keyboard->capture();
+		//mDevice->mouse->capture();
 	}
 	if(game != 0)
 		game->frameRenderingQueued(evt);

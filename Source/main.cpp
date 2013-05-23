@@ -18,14 +18,14 @@ MainApplication::MainApplication(void)
     mInputManager(0),
     mMouse(0),
     mKeyboard(0),
-	gameStateManager(0)
+	gameStateManager(0),
+	inputManager(0)
 {
 }
 
 //-------------------------------------------------------------------------------------
 MainApplication::~MainApplication(void)
 {
-	std::cout << "main Destructor called\n";
     if (mTrayMgr) delete mTrayMgr;
     if (mCameraMan) delete mCameraMan;
 	if(gameStateManager) {
@@ -33,7 +33,11 @@ MainApplication::~MainApplication(void)
 		delete gameStateManager;
 		gameStateManager = 0;
 	}
-
+	if(inputManager)
+	{
+		delete inputManager;
+		inputManager = 0;
+	}
     //Remove ourself as a Window listener
     Ogre::WindowEventUtilities::removeWindowEventListener(mWindow, this);
     windowClosed(mWindow);
@@ -79,6 +83,15 @@ void MainApplication::createCamera(void)
 
     mCameraMan = new OgreBites::SdkCameraMan(mCamera);   // create a default camera controller
 }
+
+    
+bool MainApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
+{
+	if(mWindow->isClosed())
+        return false;
+	return true;
+}
+
 //-------------------------------------------------------------------------------------
 void MainApplication::createFrameListener(void)
 {
@@ -91,10 +104,11 @@ void MainApplication::createFrameListener(void)
     windowHndStr << windowHnd;
     pl.insert(std::make_pair(std::string("WINDOW"), windowHndStr.str()));
 
-    mInputManager = OIS::InputManager::createInputSystem( pl );
+    //mInputManager = OIS::InputManager::createInputSystem( pl );
 
-    mKeyboard = static_cast<OIS::Keyboard*>(mInputManager->createInputObject( OIS::OISKeyboard, true ));
-    mMouse = static_cast<OIS::Mouse*>(mInputManager->createInputObject( OIS::OISMouse, true ));
+    //mKeyboard = static_cast<OIS::Keyboard*>(mInputManager->createInputObject( OIS::OISKeyboard, true ));
+    //mMouse = static_cast<OIS::Mouse*>(mInputManager->createInputObject( OIS::OISMouse, true ));
+	inputManager->initialise(pl);
 
     //mMouse->setEventCallback(this);
     //mKeyboard->setEventCallback(this);
@@ -105,7 +119,7 @@ void MainApplication::createFrameListener(void)
     //Register as a Window listener
     Ogre::WindowEventUtilities::addWindowEventListener(mWindow, this);
 
-    mTrayMgr = new OgreBites::SdkTrayManager("InterfaceName", mWindow, mMouse, this);
+	mTrayMgr = new OgreBites::SdkTrayManager("InterfaceName", mWindow, inputManager->getMouse(), this);
     mTrayMgr->showFrameStats(OgreBites::TL_BOTTOMLEFT);
     mTrayMgr->showLogo(OgreBites::TL_BOTTOMRIGHT);
     mTrayMgr->hideCursor();
@@ -129,7 +143,7 @@ void MainApplication::createFrameListener(void)
     mDetailsPanel->setParamValue(10, "Solid");
     mDetailsPanel->hide();
 
-    //mRoot->addFrameListener(this);
+    mRoot->addFrameListener(this);
 }
 //-------------------------------------------------------------------------------------
 void MainApplication::destroyScene(void)
@@ -197,8 +211,9 @@ void MainApplication::go(void)
         return;
 	info.ogre = mRoot;
 	info.rwindow = mWindow;
-	info.mouse = mMouse;
-	info.keyboard = mKeyboard;
+	//info.mouse = mMouse;
+	//info.keyboard = mKeyboard;
+	info.manager = inputManager;
 	gameStateManager = new GameStateManager(&info);
 	//MainMenuState::Create(&manager, "mainMenuState");
 	MainGameState::Create(gameStateManager, "mainGameState");
@@ -230,7 +245,7 @@ bool MainApplication::setup(void)
     createResourceListener();
     // Load resources
     loadResources();
-
+	inputManager = new InputManager();
     // Create the scene
     //createScene();
 
@@ -246,7 +261,7 @@ void MainApplication::windowResized(Ogre::RenderWindow* rw)
     int left, top;
     rw->getMetrics(width, height, depth, left, top);
 
-    const OIS::MouseState &ms = mMouse->getMouseState();
+    const OIS::MouseState &ms = inputManager->getMouse()->getMouseState();//mMouse->getMouseState();
     ms.width = width;
     ms.height = height;
 }
@@ -257,10 +272,11 @@ void MainApplication::windowClosed(Ogre::RenderWindow* rw)
     //Only close for window that created OIS (the main window in these demos)
     if( rw == mWindow )
     {
-        if( mInputManager )
+        if( inputManager )
         {
+			inputManager->release();
             //mInputManager->destroyInputObject( mMouse );
-           // mInputManager->destroyInputObject( mKeyboard );
+            //mInputManager->destroyInputObject( mKeyboard );
 
             //OIS::InputManager::destroyInputSystem(mInputManager);
             //mInputManager = 0;

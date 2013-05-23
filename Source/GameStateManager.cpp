@@ -160,9 +160,10 @@ void GameStateManager::Shutdown()
 /** This initializes a game state to receive the events. */
 void GameStateManager::init(GameState *state)
 {
+	mDevice->manager->setEventCallbacks(state, state);
     mDevice->ogre->addFrameListener(state);
-    mDevice->keyboard->setEventCallback(state);
-    mDevice->mouse->setEventCallback(state);
+    //mDevice->keyboard->setEventCallback(state);
+    //mDevice->mouse->setEventCallback(state);
 }
  
 /** This removes event handling from a previous game state. */

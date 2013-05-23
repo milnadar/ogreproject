@@ -6,6 +6,7 @@
 #include <OISInputManager.h>
 #include <OISKeyboard.h>
 #include <OISMouse.h>
+#include "InputManager.h"
 
 typedef struct
 {
@@ -15,6 +16,7 @@ typedef struct
     OIS::InputManager *InputMgr;
     OIS::Keyboard *keyboard;
     OIS::Mouse *mouse;
+	InputManager *manager;
     //CEGUI::OgreCEGUIRenderer *GUIRenderer;
     //CEGUI::System *GUISystem;
 } device_info;

@@ -19,8 +19,9 @@
 #include <SdkCameraMan.h>
 
 #include "GameStateManager.h"
+#include "InputManager.h"
 
-class MainApplication : public Ogre::WindowEventListener, OgreBites::SdkTrayListener
+class MainApplication : public Ogre::WindowEventListener, public OgreBites::SdkTrayListener, public Ogre::FrameListener
 {
 public:
     MainApplication(void);
@@ -42,6 +43,8 @@ public:
     virtual void windowResized(Ogre::RenderWindow* rw);
     //Unattach OIS before window shutdown (very important under Linux)
     virtual void windowClosed(Ogre::RenderWindow* rw);
+	// Ogre::FrameListener
+    virtual bool frameRenderingQueued(const Ogre::FrameEvent& evt);
 
     Ogre::Root *mRoot;
     Ogre::Camera* mCamera;
@@ -63,6 +66,8 @@ public:
     OIS::Keyboard* mKeyboard;
 	GameStateManager *gameStateManager;
 	device_info info;
+	//InputManager
+	InputManager *inputManager;
 };
 
 #endif // #ifndef __BaseApplication_h_
