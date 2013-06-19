@@ -89,6 +89,8 @@ bool MainApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
 {
 	if(mWindow->isClosed())
         return false;
+	if(gameStateManager->isShutDown())
+		return false;
 	return true;
 }
 
@@ -215,9 +217,10 @@ void MainApplication::go(void)
 	//info.keyboard = mKeyboard;
 	info.manager = inputManager;
 	gameStateManager = new GameStateManager(&info);
-	//MainMenuState::Create(&manager, "mainMenuState");
+	MainMenuState::Create(gameStateManager, "mainMenuState");
 	MainGameState::Create(gameStateManager, "mainGameState");
-	gameStateManager->start(gameStateManager->findByName("mainGameState"));
+	//gameStateManager->start(gameStateManager->findByName("mainGameState"));
+	gameStateManager->start(gameStateManager->findByName("mainMenuState"));
 	//manager.start(manager.findByName("mainMenuState"));
     mRoot->startRendering();
 

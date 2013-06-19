@@ -5,7 +5,7 @@
 
 //bool isServer = false;
 
-GameManager::GameManager(Ogre::SceneManager *manager, GameHelper *helper)
+GameManager::GameManager(Ogre::SceneManager *manager, GameHelper *helper) : currentUnit(0)
 {
 	this->sceneManager = manager;
 	//this->network = network;
@@ -14,6 +14,7 @@ GameManager::GameManager(Ogre::SceneManager *manager, GameHelper *helper)
 	target = NULL;
 	walkSpeed = 10.0f;
 	direction = Ogre::Vector3::ZERO;
+	gameState = State::PlayState;
 }
 
 GameManager::~GameManager()

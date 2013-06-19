@@ -70,7 +70,8 @@ public:
 	virtual const UnitStats* getUnitStats() const = 0;
 	UnitType getType() const {return unitType;};
 	void setVisible(bool visible);
-	bool playable() const {return unitCell != NULL;};
+	//playable is when placed on a field
+	bool playable() const {return unitCell != NULL;}
 protected:
 	Ogre::Entity *unitEntity;
 	Ogre::SceneNode *unitNode;

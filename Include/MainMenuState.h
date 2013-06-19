@@ -32,7 +32,8 @@ MainMenuState::MainMenuState() : mShutdown(false)
 
 void MainMenuState::enter(void)
 {
-	trayManager = new OgreBites::SdkTrayManager("newTray", mDevice->rwindow, mDevice->mouse, this);
+	//trayManager = new OgreBites::SdkTrayManager("newTray", mDevice->rwindow, mDevice->mouse, this);
+	trayManager = new OgreBites::SdkTrayManager("newTray", mDevice->rwindow, mDevice->manager->getMouse(), this);
 }
 
 void MainMenuState::exit(void)
@@ -51,6 +52,7 @@ void MainMenuState::Create(GameStateListener *parent, const Ogre::String &name)
 bool MainMenuState::frameRenderingQueued(const Ogre::FrameEvent &evt)
 {
 	if(mShutdown) return false;
+	mDevice->manager->capture();
 	return true;
 }
 
@@ -58,14 +60,17 @@ bool MainMenuState::keyPressed(const OIS::KeyEvent &arg)
 {
     if (arg.key == OIS::KC_ESCAPE)
     {
+		parent->Shutdown();
 		mShutdown = true;
     }
+	else if(arg.key == OIS::KC_RETURN)
+		parent->changeGameState(parent->findByName("mainGameState"));
 	return true;
 }
 
 bool MainMenuState::mouseMoved(const OIS::MouseEvent &arg)
 {
-	if(trayManager->injectMouseMove(arg)) return true;;
+	if(trayManager->injectMouseMove(arg)) return true;
 	return true;
 }
 

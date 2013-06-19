@@ -49,6 +49,8 @@ public:
     void Shutdown(void);
 
 	virtual const device_info* getDeviceInfo() {return mDevice;}
+
+	bool isShutDown() {return mShutdown;}
  
 protected:
     /** This initializes a state to receive the events. */

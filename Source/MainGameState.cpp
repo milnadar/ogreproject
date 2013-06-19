@@ -8,7 +8,7 @@ void MainGameState::Create(GameStateListener *parent, const Ogre::String& name)
 	parent->ManageGameState(name,newState);
 }
 
-MainGameState::MainGameState(const device_info* device)
+MainGameState::MainGameState(const device_info* device) : currentUnit(0)
 {
 	if(device->ogre != 0)
 	{
@@ -59,6 +59,7 @@ void MainGameState::exit(void)
 
 void MainGameState::createScene(void)
 {
+	mRaySceneQuery = sceneManager->createRayQuery(Ogre::Ray());
 	mCamera->setPosition(-80, 80, 30);
 	mCamera->lookAt(80, 0, 30);
 	setupGUI();
@@ -144,7 +145,7 @@ bool MainGameState::keyPressed(const OIS::KeyEvent &arg )
 {
 	if (arg.key == OIS::KC_ESCAPE)
     {
-		parent->Shutdown();
+		parent->popGameState();
     }
 	return true;
 }
