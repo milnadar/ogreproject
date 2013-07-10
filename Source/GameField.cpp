@@ -145,7 +145,10 @@ void GameField::showAvailableCellsToMove(const GameUnit *unit, bool show)
 	if(unit != NULL && unit->playable())
 	{
 		Cell *unitCell = unit->getCell();
-		setAvailableCellsInRadius(unitCell, unit->stepsLeftToMove(), show);
+		int stepsToMove = unit->stepsLeftToMove();
+		if(unit->getType() == UnitType::VEHICLE)
+			stepsToMove++;
+		setAvailableCellsInRadius(unitCell, stepsToMove, show);
 	}
 }
 

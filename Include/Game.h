@@ -2,6 +2,7 @@
 #define _Game_H_
 
 #include "GameField.h"
+#include "OISMouse.h"
 
 //class Network;
 class GameHelper;
@@ -42,18 +43,31 @@ public:
 	enum Players {player1 = 1, player2};
 	void setupScene();
 	void changeGameState();
-	void selectUnit(GameUnit *unit);
+	void selectUnit(GameUnit *unit, bool showSelection = true);
 	void deselectCurrentUnit();
 	void endTurn();
 	void attackScenario();
+	//returns true if current unit was able to shoot target
+	bool shootUnit(GameUnit* target) {};
 	void performRangeAttack(GameUnit* attacker, GameUnit* target);
 	bool moveUnitToCell(GameUnit*, Cell*);
+	bool moveCurrentUnitToCell(Cell*);
 	bool setUnitInVehicle(GameUnit *unit, GameUnit *vehicle){return false;};
 	bool frameRenderingQueued(const Ogre::FrameEvent &evt);
 	const State& getGameState() const {return gameState;}
 	const Players& getCurrentPlayer() const {return currentPlayer;}
 	const Players& getActivePlayer() const {return activePlayer;}
+	bool hasSelectedUnit() const {return currentUnit != 0;}
+	bool mousePressed(const OIS::MouseEvent &arg,OIS::MouseButtonID id);
+	bool mouseReleased(const OIS::MouseEvent &arg, OIS::MouseButtonID id);
+	bool mouseMoved(const OIS::MouseEvent &arg);
+	Ogre::Camera* getCamera() {return mCamera;}
+	bool prepareUnitToBeEjected();
 private:
+	bool mouseMovedInEditState(const OIS::MouseEvent &arg);
+	bool mouseMovedInPlayState(const OIS::MouseEvent &arg);
+	bool mousePressedInEditState(const OIS::MouseEvent &arg,OIS::MouseButtonID id);
+	bool mousePressedInPlayState(const OIS::MouseEvent &arg,OIS::MouseButtonID id);
 	void setUnits(std::vector<int> ids);
 	void parseData(char* data, int size);
 	bool nextLocation();
@@ -86,6 +100,8 @@ private:
 	GameHelper *helper;
 	//Network *network;
 	Ogre::SceneManager *sceneManager;
+	Ogre::RaySceneQuery *mRaySceneQuery;// The ray scene query pointer
+	Ogre::Camera *mCamera;
 };
 
 #endif

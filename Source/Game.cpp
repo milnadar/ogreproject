@@ -2,6 +2,8 @@
 #include "UnitManager.h"
 //#include "Network.h"
 #include "GameHelper.h"
+#include "MyGUI.h"
+#include "MyGUI_OgrePlatform.h"
 
 //bool isServer = false;
 
@@ -15,6 +17,13 @@ GameManager::GameManager(Ogre::SceneManager *manager, GameHelper *helper) : curr
 	walkSpeed = 10.0f;
 	direction = Ogre::Vector3::ZERO;
 	gameState = State::PlayState;
+	mCamera = sceneManager->getCamera("PlayerCam");
+	mCamera->setPosition(0, 100, 0);
+	mCamera->lookAt(0, 0 ,0);
+	//if unit required to be ejected from a vihicle
+	needToEject = false;
+	currentPlayer = Players::player1;
+	activePlayer = Players::player1;
 }
 
 GameManager::~GameManager()
@@ -24,6 +33,9 @@ GameManager::~GameManager()
 
 void GameManager::setupScene()
 {
+	mRaySceneQuery = sceneManager->createRayQuery(Ogre::Ray());
+	mCamera->setPosition(-80, 80, 30);
+	mCamera->lookAt(80, 0, 30);
 	UnitManager *unitManager = new UnitManager(sceneManager);
 	field = new GameField(sceneManager);
 	field->setupField();
@@ -131,7 +143,7 @@ bool GameManager::frameRenderingQueued(const Ogre::FrameEvent &evt)
 	return true;
 }
 
-void GameManager::selectUnit(GameUnit *unit)
+void GameManager::selectUnit(GameUnit *unit, bool showSelection)
 {
 	if(unit != NULL && unit->playable() && unit->getOwner() == currentPlayer)
 	{
@@ -140,7 +152,8 @@ void GameManager::selectUnit(GameUnit *unit)
 		currentUnit = unit;
 		currentUnit->getNode()->showBoundingBox(true);
 		//consoleOutput("Selected unit " + currentUnit->getUnitName());
-		field->showAvailableCellsToMove(currentUnit, true);
+		if(showSelection)
+			field->showAvailableCellsToMove(currentUnit, true);
 	}
 }
 
@@ -286,6 +299,31 @@ bool GameManager::moveUnitToCell(GameUnit *unit, Cell* cell)
 	return true;
 }
 
+bool GameManager::moveCurrentUnitToCell(Cell* cell)
+{
+	if (currentUnit == 0)
+		return false;
+	std::vector<Cell*> path;
+	std::vector<Cell*>::iterator pathItr;
+	//when vehicle is selected, avoid clicking to cell that is occupied by this vehicle
+	if(currentUnit->getType() == UnitType::VEHICLE)
+	{
+		if(field->areCellsNeighbours(currentUnit->getCell(), cell, 0))
+			return false;
+	}
+	path = field->findPath(currentUnit->getCell(), cell, currentUnit->getType() - 1);
+	if(path.size() > currentUnit->stepsLeftToMove() || path.empty())
+		return false;
+	finalCell = path.front();
+	field->showAvailableCellsToMove(currentUnit, false);
+	field->removeUnitFromCell(currentUnit);
+	for(pathItr = path.begin(); pathItr != path.end(); pathItr++)
+		{walkList.push_front((*pathItr)->getEntity()->getParentSceneNode()->getPosition());
+	}
+	//consoleOutput("Unit " + unit->getUnitName() + " moved to cell " + cell->getName());
+	return true;
+}
+
 void GameManager::performRangeAttack(GameUnit* attacker, GameUnit *target)
 {
 	if(attacker != target)
@@ -370,4 +408,276 @@ void GameManager::attackScenario()
 		target->startAnimation(GameUnit::AnimationList::DEATH_ANIMATION, false);
 		target = NULL;
 	}
+}
+
+bool GameManager::mouseMoved(const OIS::MouseEvent &arg)
+{
+	//std::cout << "mouse moved\n";
+	bool result = true;
+	//MyGUI::InputManager::getInstance().injectMouseMove(arg.state.X.abs, arg.state.Y.abs, arg.state.Z.abs);
+	if(arg.state.buttonDown(OIS::MB_Right))
+	{
+		mCamera->yaw(Ogre::Degree(-arg.state.X.rel * .2));
+		mCamera->pitch(Ogre::Degree(-arg.state.Y.rel * .2));
+	}
+	if(getGameState() == State::EditState)
+		result = mouseMovedInEditState(arg);
+	else if(getGameState() == State::PlayState)
+		result = mouseMovedInPlayState(arg);
+	//mCameraMan->injectMouseMove(arg);
+	return result;
+}
+
+bool GameManager::mouseMovedInEditState(const OIS::MouseEvent &arg)
+{
+	if(currentUnit != NULL)
+	{
+		MyGUI::IntPoint position = MyGUI::InputManager::getInstance().getMousePosition();
+		Ogre::Ray mouseRay = mCamera->getCameraToViewportRay(position.left/float(arg.state.width),position.top/float(arg.state.height));
+        mRaySceneQuery->setRay(mouseRay);
+ 
+        Ogre::RaySceneQueryResult &result = mRaySceneQuery->execute();
+        Ogre::RaySceneQueryResult::iterator itr = result.begin();
+ 
+		if (itr != result.end() && itr->movable)
+		{
+			Ogre::Vector3 position = itr->movable->getParentSceneNode()->getPosition();
+			currentUnit->SetPosition(position);
+		}
+	}
+	return true;
+}
+
+bool GameManager::mouseMovedInPlayState(const OIS::MouseEvent &arg)
+{
+	return true;
+}
+
+bool GameManager::mousePressed(const OIS::MouseEvent &arg, OIS::MouseButtonID id)
+{
+	//if(!loop)
+	//	return false;
+	//mCameraMan->injectMouseDown(arg, id);
+	MyGUI::InputManager::getInstance().injectMousePress(arg.state.X.abs, arg.state.Y.abs, MyGUI::MouseButton::Enum(id));
+	bool result = true;
+	if(id == OIS::MB_Left)
+	{
+		//mLmouseDown = true;
+	}
+	else if(id == OIS::MB_Right)
+	{
+		//mRmouseDown = true;
+		MyGUI::PointerManager::getInstance().setVisible(false);
+		//deselectCurrentUnit();
+	}
+	if(getGameState() == State::EditState)
+		result = mousePressedInEditState(arg, id);
+	else if(getGameState() == State::PlayState)
+		result = mousePressedInPlayState(arg, id);
+	return result;
+}
+
+bool GameManager::mousePressedInEditState(const OIS::MouseEvent &arg,OIS::MouseButtonID id)
+{
+	if(id == OIS::MB_Left)
+	{
+		MyGUI::IntPoint position = MyGUI::InputManager::getInstance().getMousePosition();
+		Ogre::Ray mouseRay = mCamera->getCameraToViewportRay(position.left/float(arg.state.width),position.top/float(arg.state.height));
+        mRaySceneQuery->setRay(mouseRay);
+ 
+        Ogre::RaySceneQueryResult &result = mRaySceneQuery->execute();
+        Ogre::RaySceneQueryResult::iterator itr;
+		for(itr = result.begin(); itr != result.end(); itr++)
+		{
+			if(currentUnit != NULL)
+			{
+				if (itr->movable && itr->movable->getName().find("cell") == 0)
+				{
+					Cell* cell = Ogre::any_cast<Cell*>(itr->movable->getUserAny());
+					if(field->setUnitOnCell(cell, currentUnit))
+						deselectCurrentUnit();
+					break;
+				}
+			}
+			else
+			{
+				if (itr->movable && itr->movable->getName().find("trooper") == 0)
+				{
+					selectUnit(Ogre::any_cast<Trooper*>(itr->movable->getUserAny()), false);
+					break;
+				}
+			}
+		}
+	}
+	else if(id == OIS::MB_Right)
+	{
+		//
+	}
+	return true;
+}
+
+bool GameManager::mousePressedInPlayState(const OIS::MouseEvent &arg,OIS::MouseButtonID id)
+{
+	//if(mLmouseDown)
+	if(arg.state.buttonDown(OIS::MB_Left))
+	{
+		MyGUI::IntPoint position = MyGUI::InputManager::getInstance().getMousePosition();
+		Ogre::Ray mouseRay = mCamera->getCameraToViewportRay(position.left/float(arg.state.width),position.top/float(arg.state.height));
+        mRaySceneQuery->setRay(mouseRay);
+		mRaySceneQuery->setSortByDistance(true);
+ 
+        Ogre::RaySceneQueryResult &result = mRaySceneQuery->execute();
+        Ogre::RaySceneQueryResult::iterator itr;
+		for(itr = result.begin(); itr != result.end(); itr++)
+		{
+			if(getCurrentPlayer() != getActivePlayer())
+				break;
+			if(currentUnit != NULL && currentUnit->playable())	
+			//if(hasSelectedUnit())
+			{
+				//if unit has to be ejected from vehicle
+				if(needToEject && currentUnit->getType() == UnitType::VEHICLE)
+				{
+					if (itr->movable && itr->movable->getName().find("cell") == 0)
+					{
+						//if mouse was clicked in cell which is available to eject
+						Cell *cell = Ogre::any_cast<Cell*>(itr->movable->getUserAny());
+						if(cell->isShowedAsAvailable())
+						{
+							needToEject = false;
+							Vehicle *vehicle = static_cast<Vehicle*>(currentUnit);
+							GameUnit *unit = vehicle->ejectPilot();
+							unit->setVisible(true);
+							field->showAvailableCellsToEject(currentUnit, false);
+							field->setUnitOnCell(cell, unit);
+							selectUnit(unit);
+						}
+					}
+					return true;
+				}
+				if(itr->movable && itr->movable->getName().find("trooper") == 0)
+				{
+					GameUnit* pointedUnit = Ogre::any_cast<Trooper*>(itr->movable->getUserAny());
+					if(pointedUnit->getOwner() != getCurrentPlayer())
+					{
+						if(currentUnit->canShoot())
+						{
+							GameUnit *targetUnit = Ogre::any_cast<Trooper*>(itr->movable->getUserAny());
+							performRangeAttack(currentUnit, targetUnit);
+						}
+					}
+					else
+					{
+						//deselectCurrentUnit();
+						//currentUnit = pointedUnit;
+						selectUnit(pointedUnit);
+					}
+					break;
+				}
+				else if(itr->movable && itr->movable->getName().find("vehicle") == 0)
+				{
+					Vehicle *pointedVehicle = Ogre::any_cast<Vehicle*>(itr->movable->getUserAny());
+					if(pointedVehicle->getOwner() == 0)
+					{
+						GameUnit *unit = currentUnit;
+						//if(field->setUnitInVehicle(unit, pointedVehicle))
+						//if(setUnitInVehicle(unit, pointedVehicle))
+						if(field->setUnitInVehicle(unit, pointedVehicle))
+						{
+							//if driver was set in vehicle remove it's figure from field
+							deselectCurrentUnit();
+							field->removeUnitFromCell(unit);
+							selectUnit(pointedVehicle);
+							//network
+						}
+					}
+					else if(pointedVehicle->getOwner() == getCurrentPlayer())
+						selectUnit(pointedVehicle);
+					break;
+				}
+				else if (itr->movable && itr->movable->getName().find("cell") == 0)
+				{
+					Cell* cell = Ogre::any_cast<Cell*>(itr->movable->getUserAny());
+					bool result = false;
+					if(hasSelectedUnit())
+						result = moveCurrentUnitToCell(cell);
+					//result = game->moveUnitToCell(currentUnit, cell);
+					if(result)
+					{
+					/*	char data[5];
+						data[0] = (char)NetworkGameState::GSGameEvent;
+						data[1] = (char)NetworkGameEvent::GEMoveUnit;
+						data[2] = (char)currentUnit->getID();
+						data[3] = (char)cell->getI();
+						data[4] = (char)cell->getJ();
+						std::cout << "sending packet\n" << "GSGameEvent\n" << "GEMoveUnit\n";
+						std::cout << "Unit ID = " << (int)data[2] << '\n' << " to position " << (int)data[3] << ' ' << (int)data[4] << '\n';
+						if(isServer)
+							network->sendDataToClient(data, sizeof(data));
+						else
+							network->sendDataToServer(data, sizeof(data));*/
+					}
+					break;
+				}
+			}
+			else
+			{
+				if (itr->movable && itr->movable->getName().find("trooper") == 0)
+				{
+					selectUnit(Ogre::any_cast<Trooper*>(itr->movable->getUserAny()));
+					break;
+				}
+				else if(itr->movable && itr->movable->getName().find("vehicle") == 0)
+				{
+					selectUnit(Ogre::any_cast<Vehicle*>(itr->movable->getUserAny()));
+					break;
+				}
+			}
+		}
+	}
+	//else if(mRmouseDown)
+	else if(arg.state.buttonDown(OIS::MB_Right))
+	{
+		if(0)//needToEject)
+		{
+			//rplace with GameManager::ShowAvailableToEject() implementation
+			//needToEject = false;
+			//field->showAvailableCellsToEject(currentUnit, false);
+			//field->showAvailableCellsToMove(currentUnit, true);
+		}
+		else
+		{
+			deselectCurrentUnit();
+		}
+	}
+	return true;
+}
+
+bool GameManager::mouseReleased(const OIS::MouseEvent &arg, OIS::MouseButtonID id)
+{
+	//mCameraMan->injectMouseUp(arg, id);
+	//MyGUI::InputManager::getInstance().injectMouseRelease(arg.state.X.abs, arg.state.Y.abs, MyGUI::MouseButton::Enum(id));
+	//	if(id == OIS::MB_Left)
+	//	mLmouseDown = false;
+	//else if(id == OIS::MB_Right)
+	//{
+	//	mRmouseDown = false;
+	//	MyGUI::PointerManager::getInstance().setVisible(true);
+	//}
+	return true;
+}
+
+bool GameManager::prepareUnitToBeEjected()
+{
+	if(currentUnit != NULL && currentUnit->getType() == UnitType::VEHICLE)
+	{
+		Vehicle *vehicle = static_cast<Vehicle*>(currentUnit);
+		if(vehicle->canEject())
+		{
+			needToEject = true;
+			field->showAvailableCellsToMove(currentUnit, false);
+			field->showAvailableCellsToEject(currentUnit, true);
+		}
+	}
+	return true;
 }

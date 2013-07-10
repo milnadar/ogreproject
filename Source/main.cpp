@@ -27,7 +27,7 @@ MainApplication::MainApplication(void)
 MainApplication::~MainApplication(void)
 {
     if (mTrayMgr) delete mTrayMgr;
-    if (mCameraMan) delete mCameraMan;
+    //if (mCameraMan) delete mCameraMan;
 	if(gameStateManager) {
 		gameStateManager->Shutdown();
 		delete gameStateManager;
@@ -81,7 +81,7 @@ void MainApplication::createCamera(void)
     mCamera->lookAt(Ogre::Vector3(0,0,-300));
     mCamera->setNearClipDistance(5);
 
-    mCameraMan = new OgreBites::SdkCameraMan(mCamera);   // create a default camera controller
+    //mCameraMan = new OgreBites::SdkCameraMan(mCamera);   // create a default camera controller
 }
 
     
@@ -217,10 +217,10 @@ void MainApplication::go(void)
 	//info.keyboard = mKeyboard;
 	info.manager = inputManager;
 	gameStateManager = new GameStateManager(&info);
-	MainMenuState::Create(gameStateManager, "mainMenuState");
+	//MainMenuState::Create(gameStateManager, "mainMenuState");
 	MainGameState::Create(gameStateManager, "mainGameState");
 	//gameStateManager->start(gameStateManager->findByName("mainGameState"));
-	gameStateManager->start(gameStateManager->findByName("mainMenuState"));
+	gameStateManager->start(gameStateManager->findByName("mainGameState"));
 	//manager.start(manager.findByName("mainMenuState"));
     mRoot->startRendering();
 

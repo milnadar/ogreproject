@@ -25,7 +25,7 @@ public:
 	virtual bool frameEnded(const Ogre::FrameEvent &evt);
 	// OIS::KeyListener
 	virtual bool keyPressed(const OIS::KeyEvent &arg );
-	virtual bool keyReleased( const OIS::KeyEvent &arg ){return true;};
+	virtual bool keyReleased( const OIS::KeyEvent &arg );
     //OIS::MouseListener
     virtual bool mouseMoved(const OIS::MouseEvent &arg);
     virtual bool mousePressed(const OIS::MouseEvent &arg,OIS::MouseButtonID id);
@@ -44,7 +44,7 @@ public:
 private:
 	MainGameState(const device_info* device);
 	~MainGameState();
-	Ogre::RaySceneQuery *mRaySceneQuery;// The ray scene query pointer
+	//Ogre::RaySceneQuery *mRaySceneQuery;// The ray scene query pointer
 	MyGUI::ButtonPtr button;
 	MyGUI::EditBox *gameConsole;
     bool mLmouseDown, mRmouseDown;		// True if the mouse buttons are down
@@ -54,7 +54,7 @@ private:
 	GameHelper helper;
 	GameManager* game;
 	Ogre::SceneManager *sceneManager;
-	Ogre::Camera *mCamera;
+	//Ogre::Camera *mCamera;
 	float mRotateSpeed;
 	GameUnit *currentUnit;
 	bool isServer;

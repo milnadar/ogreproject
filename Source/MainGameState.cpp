@@ -16,10 +16,10 @@ MainGameState::MainGameState(const device_info* device) : currentUnit(0)
 		network = new Network();
 		network->initialiseNetwork();
 		game = new GameManager(sceneManager, &helper);
-		mCamera = sceneManager->getCamera("PlayerCam");
-		mCamera->setPosition(0, 100, 0);
-		mCamera->lookAt(0, 0 ,0);
-		mCameraMan = new OgreBites::SdkCameraMan(mCamera);		
+		//mCamera = sceneManager->getCamera("PlayerCam");
+		//mCamera->setPosition(0, 100, 0);
+		//mCamera->lookAt(0, 0 ,0);
+		mCameraMan = new OgreBites::SdkCameraMan(game->getCamera());		
 	}
 	loop = true;
 	mLmouseDown = false;
@@ -59,12 +59,8 @@ void MainGameState::exit(void)
 
 void MainGameState::createScene(void)
 {
-	mRaySceneQuery = sceneManager->createRayQuery(Ogre::Ray());
-	mCamera->setPosition(-80, 80, 30);
-	mCamera->lookAt(80, 0, 30);
 	setupGUI();
 	game->setupScene();
-    // create your scene here :)
 }
 
 void MainGameState::setupGUI()
@@ -121,8 +117,6 @@ bool MainGameState::frameRenderingQueued(const Ogre::FrameEvent &evt)
 	if(mDevice)
 	{
 		mDevice->manager->capture();
-		//mDevice->keyboard->capture();
-		//mDevice->mouse->capture();
 	}
 	if(game != 0)
 		game->frameRenderingQueued(evt);
@@ -147,6 +141,13 @@ bool MainGameState::keyPressed(const OIS::KeyEvent &arg )
     {
 		parent->popGameState();
     }
+	mCameraMan->injectKeyDown(arg);
+	return true;
+}
+
+bool MainGameState::keyReleased(const OIS::KeyEvent &arg)
+{
+	mCameraMan->injectKeyUp(arg);
 	return true;
 }
 
@@ -157,20 +158,21 @@ bool MainGameState::mouseMoved(const OIS::MouseEvent &arg)
 	MyGUI::InputManager::getInstance().injectMouseMove(arg.state.X.abs, arg.state.Y.abs, arg.state.Z.abs);
 	if(mRmouseDown)
 	{
-		mCamera->yaw(Ogre::Degree(-arg.state.X.rel * mRotateSpeed));
-		mCamera->pitch(Ogre::Degree(-arg.state.Y.rel * mRotateSpeed));
+		//mCamera->yaw(Ogre::Degree(-arg.state.X.rel * mRotateSpeed));
+		//mCamera->pitch(Ogre::Degree(-arg.state.Y.rel * mRotateSpeed));
 	}
-	if(game->getGameState() == State::EditState)
-		result = mouseMovedInEditState(arg);
-	else if(game->getGameState() == State::PlayState)
-		result = mouseMovedInPlayState(arg);
+	//if(game->getGameState() == State::EditState)
+	//	result = mouseMovedInEditState(arg);
+	//else if(game->getGameState() == State::PlayState)
+	//	result = mouseMovedInPlayState(arg);
 	//mCameraMan->injectMouseMove(arg);
-	return result;
+	//return result;
+	return game->mouseMoved(arg);
 }
 
 bool MainGameState::mouseMovedInEditState(const OIS::MouseEvent &arg)
 {
-	if(currentUnit != NULL)
+	/*if(currentUnit != NULL)
 	{
 		MyGUI::IntPoint position = MyGUI::InputManager::getInstance().getMousePosition();
 		Ogre::Ray mouseRay = mCamera->getCameraToViewportRay(position.left/float(arg.state.width),position.top/float(arg.state.height));
@@ -184,7 +186,7 @@ bool MainGameState::mouseMovedInEditState(const OIS::MouseEvent &arg)
 			Ogre::Vector3 position = itr->movable->getParentSceneNode()->getPosition();
 			currentUnit->SetPosition(position);
 		}
-	}
+	}*/
 	return true;
 }
 
@@ -198,8 +200,8 @@ bool MainGameState::mousePressed(const OIS::MouseEvent &arg, OIS::MouseButtonID 
 	if(!loop)
 		return false;
 	mCameraMan->injectMouseDown(arg, id);
-	MyGUI::InputManager::getInstance().injectMousePress(arg.state.X.abs, arg.state.Y.abs, MyGUI::MouseButton::Enum(id));
 	bool result = true;
+	MyGUI::InputManager::getInstance().injectMousePress(arg.state.X.abs, arg.state.Y.abs, MyGUI::MouseButton::Enum(id));
 	if(id == OIS::MB_Left)
 	{
 		mLmouseDown = true;
@@ -208,12 +210,8 @@ bool MainGameState::mousePressed(const OIS::MouseEvent &arg, OIS::MouseButtonID 
 	{
 		mRmouseDown = true;
 		MyGUI::PointerManager::getInstance().setVisible(false);
-		//deselectCurrentUnit();
 	}
-	if(game->getGameState() == State::EditState)
-		result = mousePressedInEditState(arg, id);
-	else if(game->getGameState() == State::PlayState)
-		result = mousePressedInPlayState(arg, id);
+	result = game->mousePressed(arg, id);
 	return result;
 }
 
@@ -258,7 +256,8 @@ bool MainGameState::mousePressedInEditState(const OIS::MouseEvent &arg,OIS::Mous
 
 bool MainGameState::mousePressedInPlayState(const OIS::MouseEvent &arg,OIS::MouseButtonID id)
 {
-	if(mLmouseDown)
+	return true;
+	/*if(mLmouseDown)
 	{
 		MyGUI::IntPoint position = MyGUI::InputManager::getInstance().getMousePosition();
 		Ogre::Ray mouseRay = mCamera->getCameraToViewportRay(position.left/float(arg.state.width),position.top/float(arg.state.height));
@@ -271,10 +270,11 @@ bool MainGameState::mousePressedInPlayState(const OIS::MouseEvent &arg,OIS::Mous
 		{
 			if(game->getCurrentPlayer() != game->getActivePlayer())
 				break;
-			if(currentUnit != NULL && currentUnit->playable())	
+			//if(currentUnit != NULL && currentUnit->playable())	
+			if(game->hasSelectedUnit())
 			{
 				//if unit has to be ejected from vehicle
-				/*if(needToEject && currentUnit->getType() == UnitType::VEHICLE)
+				if(needToEject && currentUnit->getType() == UnitType::VEHICLE)
 				{
 					if (itr->movable && itr->movable->getName().find("cell") == 0)
 					{
@@ -292,7 +292,7 @@ bool MainGameState::mousePressedInPlayState(const OIS::MouseEvent &arg,OIS::Mous
 						}
 					}
 					return true;
-				}*/
+				}
 				if(itr->movable && itr->movable->getName().find("trooper") == 0)
 				{
 					GameUnit* pointedUnit = Ogre::any_cast<Trooper*>(itr->movable->getUserAny());
@@ -336,7 +336,9 @@ bool MainGameState::mousePressedInPlayState(const OIS::MouseEvent &arg,OIS::Mous
 				{
 					Cell* cell = Ogre::any_cast<Cell*>(itr->movable->getUserAny());
 					bool result = false;
-					result = game->moveUnitToCell(currentUnit, cell);
+					if(game->hasSelectedUnit())
+						result = game->moveCurrentUnitToCell(cell);
+					//result = game->moveUnitToCell(currentUnit, cell);
 					if(result)
 					{
 						char data[5];
@@ -383,7 +385,7 @@ bool MainGameState::mousePressedInPlayState(const OIS::MouseEvent &arg,OIS::Mous
 		{
 			game->deselectCurrentUnit();
 		}
-	}
+	}*/
 	return true;
 }
 
@@ -391,14 +393,14 @@ bool MainGameState::mouseReleased(const OIS::MouseEvent &arg, OIS::MouseButtonID
 {
 	mCameraMan->injectMouseUp(arg, id);
 	MyGUI::InputManager::getInstance().injectMouseRelease(arg.state.X.abs, arg.state.Y.abs, MyGUI::MouseButton::Enum(id));
-		if(id == OIS::MB_Left)
+	if(id == OIS::MB_Left)
 		mLmouseDown = false;
 	else if(id == OIS::MB_Right)
 	{
 		mRmouseDown = false;
 		MyGUI::PointerManager::getInstance().setVisible(true);
 	}
-	return true;
+	return game->mouseReleased(arg, id);
 }
 
 void MainGameState::buttonClicked(MyGUI::Widget* _widget)
@@ -412,18 +414,18 @@ void MainGameState::buttonClicked(MyGUI::Widget* _widget)
 		}
 		else if(_widget->getName() == "changeGameStateButton")
 		{
-			//changeGameState();
+			game->changeGameState();
 		}
 		else if(_widget->getName() == "changePlayerButton")
 		{
 			game->endTurn();
-			char data[2];
-			data[0] = (char)NetworkGameState::GSGameEvent;
-			data[1] = (char)NetworkGameEvent::GEEndTurn;
-			if(isServer)
-				network->sendDataToClient(data, sizeof(data));
-			else
-				network->sendDataToServer(data, sizeof(data));
+			//char data[2];
+			//data[0] = (char)NetworkGameState::GSGameEvent;
+			//data[1] = (char)NetworkGameEvent::GEEndTurn;
+			//if(isServer)
+			//	network->sendDataToClient(data, sizeof(data));
+			//else
+			//	network->sendDataToServer(data, sizeof(data));
 		}
 		else if(_widget->getName() == "createServer")
 		{
@@ -445,19 +447,10 @@ void MainGameState::buttonClicked(MyGUI::Widget* _widget)
 				//currentPlayer = GameManager::Players::player2;
 				game->endTurn();
 			}
+		}
 		else if(_widget->getName() == "ejectPilot")
 		{
-			if(currentUnit != NULL && currentUnit->getType() == UnitType::VEHICLE)
-			{
-				Vehicle *vehicle = static_cast<Vehicle*>(currentUnit);
-				if(vehicle->canEject())
-				{
-					//needToEject = true;
-					//field->showAvailableCellsToMove(currentUnit, false);
-					//field->showAvailableCellsToEject(currentUnit, true);
-				}
-			}
-		}
+			game->prepareUnitToBeEjected();
 		}
 	}
 }
