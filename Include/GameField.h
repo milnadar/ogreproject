@@ -26,11 +26,14 @@ public:
 	void showAvailableCellsToEject(const GameUnit *unit, bool show);
 	bool areCellsNeighbours(const Cell* parent, const Cell* target, int radius) const;
 	bool setUnitInVehicle(GameUnit *unit, GameUnit *vehicle);
+	/*! Makes cells around given one, in a radius for given radius to be walkable when they are checked by pathFind method
+	 *  ignoreCurrent makes current cell walkable too 
+	 */
+	void ignoreOccupiedInRadius(Cell* parent, int radius, bool ignore, bool ignoreCurrent = false);
 private:
 	void setAvailableCellsInRadius(Cell *cell, int radius, bool available);
 	bool cellsInRadiusAreWalkable(const Cell* parent, int radius);
 	bool makeCellsInRadiusOccupied(const Cell* parent, int radius, bool occupied);
-	void ignoreCellsInRadius(Cell* parent, int radius, bool ignore);
 	bool validateIndexes(int, int);
 	std::vector<Cell*> getCellsInRadius(const Cell* parent, int radius, bool includeInner = true);
 	Cell *lastCell;

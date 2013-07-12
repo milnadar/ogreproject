@@ -580,16 +580,14 @@ bool GameManager::mousePressedInPlayState(const OIS::MouseEvent &arg,OIS::MouseB
 					if(pointedVehicle->getOwner() == 0)
 					{
 						GameUnit *unit = currentUnit;
+						putUnitInVehicle(unit, pointedVehicle);
 						//if(field->setUnitInVehicle(unit, pointedVehicle))
-						//if(setUnitInVehicle(unit, pointedVehicle))
-						if(field->setUnitInVehicle(unit, pointedVehicle))
-						{
+						//{
 							//if driver was set in vehicle remove it's figure from field
-							deselectCurrentUnit();
-							field->removeUnitFromCell(unit);
-							selectUnit(pointedVehicle);
-							//network
-						}
+						//	deselectCurrentUnit();
+						//	field->removeUnitFromCell(unit);
+						//	selectUnit(pointedVehicle);
+						//}
 					}
 					else if(pointedVehicle->getOwner() == getCurrentPlayer())
 						selectUnit(pointedVehicle);
@@ -680,4 +678,36 @@ bool GameManager::prepareUnitToBeEjected()
 		}
 	}
 	return true;
+}
+
+bool GameManager::putUnitInVehicle(GameUnit *unit, Vehicle *vehicle)
+{
+	if(!vehicle->occupied())
+	{
+		//since vehicle occupies 7 cells, we have to ignore all of them to find path to vehicle
+		//after findPath method is called, all cells are restored to theirs previous states, so 
+		//those cells will be occupied again
+		field->ignoreOccupiedInRadius(vehicle->getCell(), 1, true, true);
+		std::vector<Cell*> path = field->findPath(unit->getCell(), vehicle->getCell(), 0);
+		//std::vector<Cell*> path = field->findPath(vehicle->getCell(), unit->getCell(), 1);
+		if(path.size() == 0)
+		{
+			unit->setVisible(false);
+			vehicle->setVisible(false);
+			return false;
+		}
+		else
+		{
+			if(path.size() - 2 > unit->stepsLeftToMove() || path.empty())
+				return false;
+			finalCell = path[2];
+			field->showAvailableCellsToMove(unit, false);
+			field->removeUnitFromCell(unit);
+			for(int i = 2; i < path.size(); i++)
+				{walkList.push_front(path[i]->getEntity()->getParentSceneNode()->getPosition());
+			}
+		}
+	}
+	else
+		return false;
 }

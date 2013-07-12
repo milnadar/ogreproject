@@ -63,6 +63,7 @@ public:
 	bool mouseMoved(const OIS::MouseEvent &arg);
 	Ogre::Camera* getCamera() {return mCamera;}
 	bool prepareUnitToBeEjected();
+	bool putUnitInVehicle(GameUnit *unit, Vehicle *vehicle);
 private:
 	bool mouseMovedInEditState(const OIS::MouseEvent &arg);
 	bool mouseMovedInPlayState(const OIS::MouseEvent &arg);
@@ -79,6 +80,7 @@ private:
 	int getDistance(const GameUnit* attacker, const GameUnit* target);
 	//returns distance between two points
 	int getDistance(const Ogre::Vector3 &position1, const Ogre::Vector3 &position2);
+	void processUnitMoving(GameUnit *unit, std::vector<Cell*>& path) {}
 	GameField *field;
 	GameUnit *currentUnit;
 	//

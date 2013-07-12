@@ -115,6 +115,7 @@ public:
 	virtual void resetTurnStats();
 	bool setUnitIn(GameUnit *pilot);
 	bool canEject();
+	const bool occupied() const {return this->pilot != NULL;}
 	GameUnit* ejectPilot();
 private:
 	GameUnit *pilot;

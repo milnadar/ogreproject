@@ -281,35 +281,40 @@ bool GameField::makeCellsInRadiusOccupied(const Cell* parent, int radius, bool o
 }
 
 
-void GameField::ignoreCellsInRadius(Cell* parent, int radius, bool ignore)
+void GameField::ignoreOccupiedInRadius(Cell* parent, int radius, bool ignore, bool ignoreCurrent)
 {
-	Cell* neighbour = NULL;
-	int shiftForXr;
-	int shiftForXl;
-	if (parent->getI() % 2 == 0)
+	if(parent != NULL)
 	{
-		shiftForXr = 0;
-		shiftForXl = 1;
-	}
-	else
-	{
-		shiftForXr = 1;
-		shiftForXl = 0;
-	}
-	//get all 6 neighbours of the cell
-	for(int i = 0; i < 6; i ++)
-	{
-		switch(i)
+		Cell* neighbour = NULL;
+		int shiftForXr;
+		int shiftForXl;
+		if (parent->getI() % 2 == 0)
 		{
-		case 0 : {neighbour = getCellByIndex(parent->getI() + 1, parent->getJ() - shiftForXl); break;};
-		case 1 : {neighbour = getCellByIndex(parent->getI() + 1, parent->getJ() + shiftForXr); break;};
-		case 2 : {neighbour = getCellByIndex(parent->getI(), parent->getJ() + 1); break;};
-		case 3 : {neighbour = getCellByIndex(parent->getI() - 1, parent->getJ() + shiftForXr); break;};
-		case 4 : {neighbour = getCellByIndex(parent->getI() - 1, parent->getJ() - shiftForXl); break;};
-		case 5 : {neighbour = getCellByIndex(parent->getI(), parent->getJ() - 1); break;};
+			shiftForXr = 0;
+			shiftForXl = 1;
 		}
-		if(neighbour != NULL)
-			neighbour->setCheckedForRadius(ignore);
+		else
+		{
+			shiftForXr = 1;
+			shiftForXl = 0;
+		}
+		//get all 6 neighbours of the cell
+		for(int i = 0; i < 6; i ++)
+		{
+			switch(i)
+			{
+			case 0 : {neighbour = getCellByIndex(parent->getI() + 1, parent->getJ() - shiftForXl); break;};
+			case 1 : {neighbour = getCellByIndex(parent->getI() + 1, parent->getJ() + shiftForXr); break;};
+			case 2 : {neighbour = getCellByIndex(parent->getI(), parent->getJ() + 1); break;};
+			case 3 : {neighbour = getCellByIndex(parent->getI() - 1, parent->getJ() + shiftForXr); break;};
+			case 4 : {neighbour = getCellByIndex(parent->getI() - 1, parent->getJ() - shiftForXl); break;};
+			case 5 : {neighbour = getCellByIndex(parent->getI(), parent->getJ() - 1); break;};
+			}
+			if(neighbour != NULL)
+				neighbour->setCheckedForRadius(ignore);
+		}
+		if(ignoreCurrent)
+			parent->setCheckedForRadius(ignore);
 	}
 }
 
@@ -342,7 +347,7 @@ std::vector<Cell*> GameField::findPath(const Cell* _start, const Cell* _finish, 
 		return tmpPath;
 	}
 	if(unitSize > 0)
-		ignoreCellsInRadius(start, 0, true);
+		ignoreOccupiedInRadius(start, 0, true);
 	opened.push_back(start);
 	//while ((!listContains (closed, finish)) && (opened.size() != 0))
 	while ((!fin) && (opened.size() != 0))
