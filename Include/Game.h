@@ -45,13 +45,12 @@ public:
 	void changeGameState();
 	void selectUnit(GameUnit *unit, bool showSelection = true);
 	void deselectCurrentUnit();
+	void deselectUnit(GameUnit *unit);
 	void endTurn();
-	void attackScenario();
 	//returns true if current unit was able to shoot target
 	bool shootUnit(GameUnit* target) {};
 	void performRangeAttack(GameUnit* attacker, GameUnit* target);
 	bool moveUnitToCell(GameUnit*, Cell*);
-	bool moveCurrentUnitToCell(Cell*);
 	bool setUnitInVehicle(GameUnit *unit, GameUnit *vehicle){return false;};
 	bool frameRenderingQueued(const Ogre::FrameEvent &evt);
 	const State& getGameState() const {return gameState;}
@@ -65,6 +64,7 @@ public:
 	bool prepareUnitToBeEjected();
 	bool putUnitInVehicle(GameUnit *unit, Vehicle *vehicle);
 private:
+	enum MovingType {MTWalk, MTEnterVehicle, MTMeleAttack};
 	bool mouseMovedInEditState(const OIS::MouseEvent &arg);
 	bool mouseMovedInPlayState(const OIS::MouseEvent &arg);
 	bool mousePressedInEditState(const OIS::MouseEvent &arg,OIS::MouseButtonID id);
@@ -72,6 +72,8 @@ private:
 	void setUnits(std::vector<int> ids);
 	void parseData(char* data, int size);
 	bool nextLocation();
+	void attackScenario();
+	void movingScenario(const Ogre::FrameEvent &evt);
 	//return whether unit hit the target
 	bool calculateRangeAttack(const UnitStats *attacker, const UnitStats *target);
 	//returns units distance check result
@@ -80,16 +82,22 @@ private:
 	int getDistance(const GameUnit* attacker, const GameUnit* target);
 	//returns distance between two points
 	int getDistance(const Ogre::Vector3 &position1, const Ogre::Vector3 &position2);
-	void processUnitMoving(GameUnit *unit, std::vector<Cell*>& path) {}
+	void processUnitMoving(GameUnit *unit, std::vector<Cell*>& path, MovingType type = MovingType::MTWalk);
 	GameField *field;
 	GameUnit *currentUnit;
-	//
+	//pointer to unit that will perform moving. Only one unit can be moved at a time
+	GameUnit *unitToWalk;
+	//pointers to units that will perform attack scenario
 	GameUnit *attacker;
 	GameUnit *target;
-	//
+	//pointer to unit that requires to be ejected from vehicle
 	GameUnit *ejectedUnit;
 	//set to true only when unit need to be ejected. 
 	bool needToEject;
+	Vehicle *vehicleToPutUnitInside;
+	//what action to perform after unit reached destination point
+	//perform mele attack, enter vehicle, just stop
+	MovingType currentMovingType;
 	Ogre::Real distance;
 	Ogre::Vector3 destination;
 	Ogre::Vector3 direction;

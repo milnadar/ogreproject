@@ -7,7 +7,7 @@
 
 //bool isServer = false;
 
-GameManager::GameManager(Ogre::SceneManager *manager, GameHelper *helper) : currentUnit(0)
+GameManager::GameManager(Ogre::SceneManager *manager, GameHelper *helper) : currentUnit(0), vehicleToPutUnitInside(0), unitToWalk(0)
 {
 	this->sceneManager = manager;
 	//this->network = network;
@@ -22,6 +22,7 @@ GameManager::GameManager(Ogre::SceneManager *manager, GameHelper *helper) : curr
 	mCamera->lookAt(0, 0 ,0);
 	//if unit required to be ejected from a vihicle
 	needToEject = false;
+	currentMovingType = MovingType::MTWalk;
 	currentPlayer = Players::player1;
 	activePlayer = Players::player1;
 }
@@ -95,51 +96,7 @@ bool GameManager::frameRenderingQueued(const Ogre::FrameEvent &evt)
 		parseData(buffer, result);*/
 	UnitManager::getSingletonPtr()->addTime(evt.timeSinceLastFrame);
 	attackScenario();
-	if(direction == Ogre::Vector3::ZERO)
-	{
-		if(nextLocation())
-		{
-			Ogre::Vector3 src = currentUnit->getNode()->getOrientation() * Ogre::Vector3::UNIT_X;
-			Ogre::Quaternion quat = src.getRotationTo(direction);
-			currentUnit->getNode()->rotate(quat);
-			currentUnit->startAnimation(GameUnit::AnimationList::WALK_ANIMATION, true);
-		}
-	}
-	else
-	{
-		Ogre::Real move = walkSpeed * evt.timeSinceLastFrame;
-		distance -= move;
-		if(distance <= 0.00f)
-		{
-			currentUnit->SetPosition(destination);
-			currentUnit->moveOneStep();
-			direction = Ogre::Vector3::ZERO;
-			if(!nextLocation())
-			{
-				currentUnit->stopAnimation();
-				field->setUnitOnCell(finalCell, currentUnit);
-				field->showAvailableCellsToMove(currentUnit, true);
-				finalCell = NULL;
-			}
-			else
-			{
-				Ogre::Vector3 src = currentUnit->getNode()->getOrientation() * Ogre::Vector3::UNIT_X;
-				if ((1.0f + src.dotProduct(direction)) < 0.0001f) 
-				{
-					currentUnit->getNode()->yaw(Ogre::Degree(180));
-				}
-				else
-				{
-					Ogre::Quaternion quat = src.getRotationTo(direction);
-					currentUnit->getNode()->rotate(quat);
-				} // else
-			}
-		}
-		else
-		{
-			currentUnit->TranslateUnit(direction * move);
-		}
-	}
+	movingScenario(evt);
 	return true;
 }
 
@@ -267,13 +224,16 @@ void GameManager::parseData(char *data, int size)
 
 bool GameManager::nextLocation()
 {
-	if(walkList.empty())
-		return false;
-	destination = walkList.front();
-	walkList.pop_front();
-	direction = destination - currentUnit->getPosition();
-	distance = direction.normalise();
-	return true;
+	if(unitToWalk != NULL)
+	{
+		if(walkList.empty())
+			return false;
+		destination = walkList.front();
+		walkList.pop_front();
+		direction = destination - unitToWalk->getPosition();
+		distance = direction.normalise();
+		return true;
+	}
 }
 
 bool GameManager::moveUnitToCell(GameUnit *unit, Cell* cell)
@@ -287,41 +247,13 @@ bool GameManager::moveUnitToCell(GameUnit *unit, Cell* cell)
 			return false;
 	}
 	path = field->findPath(unit->getCell(), cell, unit->getType() - 1);
-	if(path.size() > unit->stepsLeftToMove() || path.empty())
-		return false;
-	finalCell = path.front();
-	field->showAvailableCellsToMove(currentUnit, false);
-	field->removeUnitFromCell(currentUnit);
-	for(pathItr = path.begin(); pathItr != path.end(); pathItr++)
-		{walkList.push_front((*pathItr)->getEntity()->getParentSceneNode()->getPosition());
-	}
-	//consoleOutput("Unit " + unit->getUnitName() + " moved to cell " + cell->getName());
-	return true;
-}
-
-bool GameManager::moveCurrentUnitToCell(Cell* cell)
-{
-	if (currentUnit == 0)
-		return false;
-	std::vector<Cell*> path;
-	std::vector<Cell*>::iterator pathItr;
-	//when vehicle is selected, avoid clicking to cell that is occupied by this vehicle
-	if(currentUnit->getType() == UnitType::VEHICLE)
+	if(path.size() != 0)
 	{
-		if(field->areCellsNeighbours(currentUnit->getCell(), cell, 0))
-			return false;
+		processUnitMoving(unit, path, MovingType::MTWalk);
+		//consoleOutput("Unit " + unit->getUnitName() + " moved to cell " + cell->getName());
+		return true;
 	}
-	path = field->findPath(currentUnit->getCell(), cell, currentUnit->getType() - 1);
-	if(path.size() > currentUnit->stepsLeftToMove() || path.empty())
-		return false;
-	finalCell = path.front();
-	field->showAvailableCellsToMove(currentUnit, false);
-	field->removeUnitFromCell(currentUnit);
-	for(pathItr = path.begin(); pathItr != path.end(); pathItr++)
-		{walkList.push_front((*pathItr)->getEntity()->getParentSceneNode()->getPosition());
-	}
-	//consoleOutput("Unit " + unit->getUnitName() + " moved to cell " + cell->getName());
-	return true;
+	return false;
 }
 
 void GameManager::performRangeAttack(GameUnit* attacker, GameUnit *target)
@@ -407,6 +339,76 @@ void GameManager::attackScenario()
 	{
 		target->startAnimation(GameUnit::AnimationList::DEATH_ANIMATION, false);
 		target = NULL;
+	}
+}
+
+void GameManager::movingScenario(const Ogre::FrameEvent &evt)
+{
+	if(unitToWalk != NULL)
+	{
+		if(direction == Ogre::Vector3::ZERO)
+		{
+			if(nextLocation())
+			{
+				Ogre::Vector3 src = unitToWalk->getNode()->getOrientation() * Ogre::Vector3::UNIT_X;
+				Ogre::Quaternion quat = src.getRotationTo(direction);
+				unitToWalk->getNode()->rotate(quat);
+				unitToWalk->startAnimation(GameUnit::AnimationList::WALK_ANIMATION, true);
+			}
+		}
+		else
+		{
+			Ogre::Real move = walkSpeed * evt.timeSinceLastFrame;
+			distance -= move;
+			if(distance <= 0.00f)
+			{
+				unitToWalk->SetPosition(destination);
+				unitToWalk->moveOneStep();
+				direction = Ogre::Vector3::ZERO;
+				if(!nextLocation())
+				{
+					unitToWalk->stopAnimation();
+					field->setUnitOnCell(finalCell, unitToWalk);
+					field->showAvailableCellsToMove(unitToWalk, true);
+					finalCell = NULL;
+					switch(currentMovingType)
+					{
+						case MovingType::MTEnterVehicle : {
+							if(!vehicleToPutUnitInside == NULL)
+							{
+								field->setUnitInVehicle(unitToWalk, vehicleToPutUnitInside);
+								//if driver was set in vehicle remove it's figure from field
+								GameUnit *unit = unitToWalk;
+								//selectUnit(unitToWalk, false);
+								field->removeUnitFromCell(unit);
+								selectUnit(vehicleToPutUnitInside);
+								vehicleToPutUnitInside = NULL;
+							}
+							break;
+														  }
+					}
+					currentMovingType = MovingType::MTWalk;
+					unitToWalk = NULL;
+				}
+				else
+				{
+					Ogre::Vector3 src = unitToWalk->getNode()->getOrientation() * Ogre::Vector3::UNIT_X;
+					if ((1.0f + src.dotProduct(direction)) < 0.0001f) 
+					{
+						unitToWalk->getNode()->yaw(Ogre::Degree(180));
+					}
+					else
+					{
+						Ogre::Quaternion quat = src.getRotationTo(direction);
+						unitToWalk->getNode()->rotate(quat);
+					} // else
+				}
+			}
+			else
+			{
+				unitToWalk->TranslateUnit(direction * move);
+			}
+		}
 	}
 }
 
@@ -598,8 +600,8 @@ bool GameManager::mousePressedInPlayState(const OIS::MouseEvent &arg,OIS::MouseB
 					Cell* cell = Ogre::any_cast<Cell*>(itr->movable->getUserAny());
 					bool result = false;
 					if(hasSelectedUnit())
-						result = moveCurrentUnitToCell(cell);
-					//result = game->moveUnitToCell(currentUnit, cell);
+						//result = moveCurrentUnitToCell(cell);
+						result = moveUnitToCell(currentUnit, cell);
 					if(result)
 					{
 					/*	char data[5];
@@ -682,32 +684,42 @@ bool GameManager::prepareUnitToBeEjected()
 
 bool GameManager::putUnitInVehicle(GameUnit *unit, Vehicle *vehicle)
 {
-	if(!vehicle->occupied())
+	if(unit != NULL && vehicle != NULL)
 	{
-		//since vehicle occupies 7 cells, we have to ignore all of them to find path to vehicle
-		//after findPath method is called, all cells are restored to theirs previous states, so 
-		//those cells will be occupied again
-		field->ignoreOccupiedInRadius(vehicle->getCell(), 1, true, true);
-		std::vector<Cell*> path = field->findPath(unit->getCell(), vehicle->getCell(), 0);
-		//std::vector<Cell*> path = field->findPath(vehicle->getCell(), unit->getCell(), 1);
-		if(path.size() == 0)
+		if(!vehicle->occupied())
 		{
-			unit->setVisible(false);
-			vehicle->setVisible(false);
-			return false;
-		}
-		else
-		{
-			if(path.size() - 2 > unit->stepsLeftToMove() || path.empty())
-				return false;
-			finalCell = path[2];
-			field->showAvailableCellsToMove(unit, false);
-			field->removeUnitFromCell(unit);
-			for(int i = 2; i < path.size(); i++)
-				{walkList.push_front(path[i]->getEntity()->getParentSceneNode()->getPosition());
+			//since vehicle occupies 7 cells, we have to ignore all of them to find path to vehicle
+			//after findPath method is called, all cells are reset to theirs previous states, so 
+			//those cells will be occupied again
+			field->ignoreOccupiedInRadius(vehicle->getCell(), 1, true, true);
+			std::vector<Cell*> path = field->findPath(unit->getCell(), vehicle->getCell(), 0);
+			//we have to ignore two cells. 1st is vehicle current position, 2nd is cell that is neighbour;
+			if(path.size() > 2)
+			{
+				std::vector<Cell*> reducedPath;
+				for(int i = 2; i < path.size(); i++)
+					reducedPath.push_back(path[i]);
+				//set unit to put in vehicle, and vehicle to put unit inside after it will stop walking;
+				//currentUnit = unit;
+				vehicleToPutUnitInside = vehicle;
+				processUnitMoving(unit, reducedPath, MovingType::MTEnterVehicle);
+				return true;
 			}
 		}
 	}
-	else
-		return false;
+	return false;
+}
+
+void GameManager::processUnitMoving(GameUnit *unit, std::vector<Cell*>& path, MovingType type)
+{
+	if(path.size() > unit->stepsLeftToMove() || path.empty())
+		return;
+	unitToWalk = unit;
+	finalCell = path.front();
+	field->showAvailableCellsToMove(unit, false);
+	field->removeUnitFromCell(unit);
+	currentMovingType = type;
+	for(int i = 0; i < path.size(); i++)
+		{walkList.push_front(path[i]->getEntity()->getParentSceneNode()->getPosition());
+	}
 }
